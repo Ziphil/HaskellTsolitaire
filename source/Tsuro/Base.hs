@@ -8,6 +8,7 @@ import Data.Array
 import Data.List
 import Data.Maybe
 import Prelude hiding (Left, Right)
+import System.Random
 
 
 data Rotation = Top | Right | Bottom | Left
@@ -218,9 +219,26 @@ infixl 6 <!~
 data Game = Game {board :: Board, hands :: [Tile]}
   deriving (Eq, Show)
 
+nubRandomRs :: RandomGen g => (Int, Int) -> g -> [Int]
+nubRandomRs (low, high) gen = take (high - low + 1) $ nub $ randomRs (low, high) gen
+
+-- 初期状態の残りタイルをシャッフルしない状態で返します。
+initialHands' :: [Tile]
+initialHands' = map (flip Tile Top) [0 .. 34]
+
+-- 初期状態の残りタイルを返します。
+initialHands :: RandomGen g => g -> [Tile]
+initialHands gen = map fst $ sortOn snd $ zip initialHands' randoms
+  where
+    randoms = nubRandomRs (0, 34) gen
+
+-- 初期状態のゲームをシャッフルしない状態で返します。
+initialGame' :: Game
+initialGame' = Game initialBoard initialHands'
+
 -- 初期状態のゲームを返します。
-initialGame :: Game
-initialGame = undefined
+initialGame :: RandomGen g => g -> Game
+initialGame gen = Game initialBoard (initialHands gen)
 
 -- 次に置くべきタイルを返します。
 -- 全てのタイルを置き切っていて置くべきタイルが残っていない場合は、Nothing を返します。
