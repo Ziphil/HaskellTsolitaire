@@ -244,7 +244,7 @@ initialGame' = Game initialBoard initialHands'
 initialGame :: RandomGen g => g -> Game
 initialGame gen = Game initialBoard (initialHands gen)
 
-isPermutation :: (Eq a) => [a] -> [a] -> Bool
+isPermutation :: Eq a => [a] -> [a] -> Bool
 isPermutation l m = length l == length m && all (flip elem l) m && all (flip elem m) l
 
 -- 与えられたタイル番号のリストの順番で手札が出てくるような初期状態のゲームを返します。
