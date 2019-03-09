@@ -263,7 +263,7 @@ nextHand (Game _ (hand : _)) = Right hand
 
 restHands :: Game -> TsuroMaybe [Tile]
 restHands (Game _ []) = Left NoNextHand
-restHands (Game _ (_: rest)) = Right rest
+restHands (Game _ (_ : rest)) = Right rest
 
 rotateTile :: Rotation -> Tile -> Tile
 rotateTile rotation (Tile number _) = Tile number rotation
