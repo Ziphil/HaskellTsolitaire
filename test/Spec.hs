@@ -12,20 +12,20 @@ import Prelude
 
 
 infixl 6 <@
-(<@) :: Board -> (TilePos, Tile) -> TsuroMaybe Board
-(<@) = flip $ uncurry putTileAndUpdate
+(<@) :: Board -> TileMove -> TsuroMaybe Board
+(<@) = flip putTileAndUpdate
 
 infixl 6 <<@
-(<<@) :: TsuroMaybe Board -> (TilePos, Tile) -> TsuroMaybe Board
-(<<@) = flip $ (=<<) . uncurry putTileAndUpdate
+(<<@) :: TsuroMaybe Board -> TileMove -> TsuroMaybe Board
+(<<@) = flip $ (=<<) . putTileAndUpdate
 
 infixl 6 <@@
-(<@@) :: Game -> (TilePos, Rotation) -> TsuroMaybe Game
-(<@@) = flip $ uncurry move
+(<@@) :: Game -> GameMove -> TsuroMaybe Game
+(<@@) = flip move
 
 infixl 6 <<@@
-(<<@@) :: TsuroMaybe Game -> (TilePos, Rotation) -> TsuroMaybe Game
-(<<@@) = flip $ (=<<) . uncurry move
+(<<@@) :: TsuroMaybe Game -> GameMove -> TsuroMaybe Game
+(<<@@) = flip $ (=<<) . move
 
 singleMoveTest :: SpecWith (Arg Expectation)
 singleMoveTest = it "returns the resulted board after a single move" $ do

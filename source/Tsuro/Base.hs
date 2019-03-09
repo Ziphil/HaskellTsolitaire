@@ -151,7 +151,7 @@ opposite edge (Aisles aisleList) = head $ mapMaybe choose aisleList
 
 -- 指定された位置のタイルを指定されたタイルで置き換え、その結果の盤面を返します。
 updateTile :: TilePos -> Tile -> Tiles -> Tiles
-updateTile tilePos tile (Tiles tileList) = Tiles $ tileList // [(tilePos, Just tile)]
+updateTile pos tile (Tiles tileList) = Tiles $ tileList // [(pos, Just tile)]
 
 -- 盤面に置かれているタイルの通路に沿って、与えられた駒位置から可能な限り進んだときに到達する駒位置を返します。
 -- 進む途中で盤面外に出てしまう場合は、OutOfBoard を返します。
@@ -182,20 +182,23 @@ isEmpty tilePos (Board (Tiles tileList) _) = isNothing (tileList ! tilePos)
 -- 指定された位置が何らかの駒と隣接しているかどうか確かめ、隣接していれば True を返します。
 -- この関数が False を返すような位置には、ルール上タイルを置くことができません。
 isAdjacentStone :: TilePos -> Board -> Bool
-isAdjacentStone tilePos (Board _ stones) = any check stones
+isAdjacentStone pos (Board _ stones) = any check stones
   where
-    check (eachTilePos, _) = eachTilePos == tilePos
+    check = (== pos) . fst 
+
+type TileMove = (TilePos, Tile)
 
 -- タイルを指定された位置に置いた後の盤面を返します。
 -- 指定された位置にすでにタイルが置かれている場合は、新たにタイルを置くことはできないので、TileAlreadyPut を返します。
 -- また、指定された位置が何らかの駒と隣接していない場合は、ルール上その位置にタイルを置くことはできないので、DetachedTilePos を返します。
 -- この関数単独では駒を動かしません。
-putTile :: TilePos -> Tile -> Board -> TsuroMaybe Board
-putTile tilePos tile board = unless isEmpty' (Left TileAlreadyPut) >> unless isAdjacentStone' (Left DetachedTilePos) >> Right nextBoard
-  where
-    isEmpty' = isEmpty tilePos board
-    isAdjacentStone' = isAdjacentStone tilePos board
-    nextBoard = Board (updateTile tilePos tile (tiles board)) (stones board)
+putTile :: TileMove -> Board -> TsuroMaybe Board
+putTile (pos, tile) board =
+  unless isEmpty' (Left TileAlreadyPut) >> unless isAdjacentStone' (Left DetachedTilePos) >> Right nextBoard
+    where
+      isEmpty' = isEmpty pos board
+      isAdjacentStone' = isAdjacentStone pos board
+      nextBoard = Board (updateTile pos tile (tiles board)) (stones board)
 
 -- 現在の盤面に従って全ての駒を移動させ、その結果の盤面を返します。
 -- 進む途中で盤面外に出てしまうような駒が 1 つでもある場合は、OutOfBoard を返します。
@@ -207,18 +210,18 @@ canAdvanceStones = isRight . advanceStones
 
 -- タイルを指定された位置に置き、さらにその後の盤面に従って全ての駒を移動させ、その結果の盤面を返します。
 -- 不可能な操作をしようとした場合は、その原因を示すエラー値を返します。
-putTileAndUpdate :: TilePos -> Tile -> Board -> TsuroMaybe Board
-putTileAndUpdate tilePos tile = advanceStones <=< putTile tilePos tile
+putTileAndUpdate :: TileMove -> Board -> TsuroMaybe Board
+putTileAndUpdate move = advanceStones <=< putTile move
 
 -- 指定された位置にタイルを置くことができるか確かめ、置けるならば True を返します。
-canPutTile :: TilePos -> Tile -> Board -> Bool
-canPutTile = ((isRight .) .) . putTileAndUpdate
+canPutTile :: TileMove -> Board -> Bool
+canPutTile = (isRight .) . putTileAndUpdate
 
 -- 指定されたタイルを置ける位置が存在するか確かめ、存在するならば True を返します。
 canPutTileAnywhere :: Tile -> Board -> Bool
 canPutTileAnywhere tile board = all check (indices $ tileList $ tiles board)
   where
-    check pos = canPutTile pos tile board
+    check pos = canPutTile (pos, tile) board
 
 data Game = Game {board :: Board, hands :: [Tile]}
   deriving (Eq, Show)
@@ -269,12 +272,14 @@ restHands (Game _ (_ : rest)) = Right rest
 rotateTile :: Rotation -> Tile -> Tile
 rotateTile rotation (Tile number _) = Tile number rotation
 
+type GameMove = (TilePos, Rotation)
+
 -- 指定された位置に置くべきタイルを置きます。
 -- 不可能な操作をしようとした場合は、その原因を示すエラー値を返します。
-move :: TilePos -> Rotation -> Game -> TsuroMaybe Game
-move tilePos rotation game = makeGame =<< putTileAndUpdate' =<< nextHand game
+move :: GameMove -> Game -> TsuroMaybe Game
+move (pos, rotation) game = makeGame =<< putTileAndUpdate' =<< nextHand game
   where
-    putTileAndUpdate' tile = putTileAndUpdate tilePos (rotateTile rotation tile) (board game)
+    putTileAndUpdate' tile = putTileAndUpdate (pos, rotateTile rotation tile) (board game)
     makeGame board = Game board <$> restHands game
 
 -- ゲームをクリアしていれば True を返します。
