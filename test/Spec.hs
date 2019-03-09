@@ -11,6 +11,22 @@ import Tsuro.Base
 import Prelude
 
 
+infixl 6 <@
+(<@) :: Board -> (TilePos, Tile) -> TsuroMaybe Board
+(<@) = flip $ uncurry putTileAndUpdate
+
+infixl 6 <<@
+(<<@) :: TsuroMaybe Board -> (TilePos, Tile) -> TsuroMaybe Board
+(<<@) = flip $ (=<<) . uncurry putTileAndUpdate
+
+infixl 6 <@@
+(<@@) :: Game -> (TilePos, Rotation) -> TsuroMaybe Game
+(<@@) = flip $ uncurry move
+
+infixl 6 <<@@
+(<<@@) :: TsuroMaybe Game -> (TilePos, Rotation) -> TsuroMaybe Game
+(<<@@) = flip $ (=<<) . uncurry move
+
 singleMoveTest :: SpecWith (Arg Expectation)
 singleMoveTest = it "returns the resulted board after a single move" $ do
   stone `shouldBe` Right ((2, 0), LeftTop)

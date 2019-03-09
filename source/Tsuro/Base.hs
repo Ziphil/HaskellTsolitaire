@@ -220,14 +220,6 @@ canPutTileAnywhere tile board = all check (indices $ tileList $ tiles board)
   where
     check pos = canPutTile pos tile board
 
-infixl 6 <@
-(<@) :: Board -> (TilePos, Tile) -> TsuroMaybe Board
-(<@) = flip $ uncurry putTileAndUpdate
-
-infixl 6 <<@
-(<<@) :: TsuroMaybe Board -> (TilePos, Tile) -> TsuroMaybe Board
-(<<@) = flip $ (=<<) . uncurry putTileAndUpdate
-
 data Game = Game {board :: Board, hands :: [Tile]}
   deriving (Eq, Show)
 
@@ -252,15 +244,15 @@ initialGame' = Game initialBoard initialHands'
 initialGame :: RandomGen g => g -> Game
 initialGame gen = Game initialBoard (initialHands gen)
 
-(=~=) :: (Eq a) => [a] -> [a] -> Bool
-l =~= m = length l == length m && all (flip elem l) m && all (flip elem m) l
+isPermutation :: (Eq a) => [a] -> [a] -> Bool
+isPermutation l m = length l == length m && all (flip elem l) m && all (flip elem m) l
 
 -- 与えられたタイル番号のリストの順番で手札が出てくるような初期状態のゲームを返します。
 -- タイル番号のリストは、0 以上 34 以下の整数が重複なく過不足なく出現している必要があります。
 -- この関数はデバッグ用です。 
 createGame :: [Int] -> Game
 createGame numbers =
-  if numbers =~= [0 .. tileSize - 1]
+  if isPermutation numbers [0 .. tileSize - 1]
     then Game initialBoard (map (flip Tile None) numbers)
     else error ""
 
@@ -294,11 +286,3 @@ isOver :: Game -> Bool
 isOver game = either (const False) check $ nextHand game
   where
     check = not . flip canPutTileAnywhere (board game)
-
-infixl 6 <@@
-(<@@) :: Game -> (TilePos, Rotation) -> TsuroMaybe Game
-(<@@) = flip $ uncurry move
-
-infixl 6 <<@@
-(<<@@) :: TsuroMaybe Game -> (TilePos, Rotation) -> TsuroMaybe Game
-(<<@@) = flip $ (=<<) . uncurry move
