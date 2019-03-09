@@ -8,7 +8,7 @@ import Data.Array
 import Data.Bifunctor
 import Data.List
 import Data.Maybe
-import Prelude hiding (Left, Right)
+import Prelude
 import System.Random
 
 

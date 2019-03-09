@@ -7,7 +7,7 @@ module Tsuro.Show where
 import Data.Array
 import Data.List
 import Tsuro.Base
-import Prelude hiding (Left, Right)
+import Prelude
 
 
 class ShowRec a where

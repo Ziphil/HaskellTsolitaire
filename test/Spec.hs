@@ -7,7 +7,7 @@ import Control.Exception
 import Control.Monad
 import Test.Hspec
 import Tsuro.Base
-import Prelude hiding (Left, Right)
+import Prelude
 
 
 singleMoveTest :: SpecWith (Arg Expectation)
