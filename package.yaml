@@ -13,6 +13,7 @@ dependencies:
   - array
   - hspec
   - random
+  - regex-compat
 
 library:
   source-dirs: source
