@@ -86,6 +86,7 @@ type TilePos = (Int, Int)
 type StonePos = (TilePos, Edge)
 
 data InvalidMove = OutOfBoard | TileAlreadyPut | DetachedTilePos | NoNextHand
+  deriving (Eq, Show)
 
 type TsuroMaybe = Either InvalidMove
 
@@ -96,13 +97,13 @@ boardSize = 6
 -- 指定した方向が盤面外の場合は、OutOfBoard を返します。
 adjacent :: Rotation -> TilePos -> TsuroMaybe TilePos
 adjacent rotation (x, y) =
-  case rotation of
-    None -> make (y > 0) (x, y - 1)
-    Clock -> make (x < boardSize - 1) (x + 1, y)
-    Inverse -> make (y < boardSize - 1) (x, y + 1)
-    Anticlock -> make (x > 0) (x - 1, y)
+  make $ case rotation of
+    None -> (y > 0, (x, y - 1))
+    Clock -> (x < boardSize - 1, (x + 1, y))
+    Inverse -> (y < boardSize - 1, (x, y + 1))
+    Anticlock -> (x > 0, (x - 1, y))
   where
-    make pred pos = if pred then Left OutOfBoard else Right pos
+    make (pred, pos) = unless pred (Left OutOfBoard) >> Right pos
 
 newtype Tiles = Tiles (Array TilePos (Maybe Tile))
   deriving (Eq, Show)
