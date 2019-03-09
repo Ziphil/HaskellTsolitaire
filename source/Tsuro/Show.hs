@@ -57,4 +57,5 @@ instance ShowRec Board where
 
 instance ShowRec Game where
   showRec game = showRec (board game) ++ "\nNext: " ++ nextHandString
-    where nextHandString = either (const "") showRec (nextHand game)
+    where
+      nextHandString = either (const "") showRec (nextHand game)
