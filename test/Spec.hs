@@ -30,16 +30,33 @@ multipleMoveTest = it "returns the resulted board after multiple moves" $ do
       secondStone = stones secondBoard !! 0
       thirdStone = stones thirdBoard !! 0
 
-invalidMoveTest :: SpecWith (Arg Expectation)
-invalidMoveTest = it "fails when an invalid move is passed" $ do
-  evaluate board `shouldThrow` anyException
-    where board = initialBoard <<~ ((2, 2), Tile 17 None)
+detachedTilePosMoveTest :: SpecWith (Arg Expectation)
+detachedTilePosMoveTest = it "fails when attempting to put a tile at a position adjacent to no stones" $ do
+  board `shouldBe` Left DetachedTilePos
+    where
+      board = initialBoard <<~ ((2, 2), Tile 17 None)
+
+outOfBoardMoveTest :: SpecWith (Arg Expectation)
+outOfBoardMoveTest = it "fails when attempting to put a tile which leads a stone out of the board" $ do
+  secondBoard `shouldBe` Left OutOfBoard
+    where
+      firstBoard = initialBoard <!~ ((5, 1), Tile 11 None)
+      secondBoard = firstBoard <<~ ((5, 2), Tile 8 Inverse)
+
+tileAlreadyPutMoveTest :: SpecWith (Arg Expectation)
+tileAlreadyPutMoveTest = it "fails when attempting to put a tile which leads a stone out of the board" $ do
+  secondBoard `shouldBe` Left TileAlreadyPut
+    where
+      firstBoard = initialBoard <!~ ((1, 0), Tile 25 None)
+      secondBoard = firstBoard <<~ ((1, 0), Tile 4 Anticlock)
 
 test :: SpecWith ()
 test = describe "Tsuro.Base" $ do
   singleMoveTest
   multipleMoveTest
-  invalidMoveTest
+  detachedTilePosMoveTest
+  outOfBoardMoveTest
+  tileAlreadyPutMoveTest
 
 main :: IO ()
 main = hspec test
