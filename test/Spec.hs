@@ -5,6 +5,7 @@ module Main where
 
 import Control.Exception
 import Control.Monad
+import Data.List
 import Test.Hspec
 import Tsuro.Base
 import Prelude
@@ -50,6 +51,14 @@ tileAlreadyPutMoveTest = it "fails when attempting to put a tile which leads a s
       firstBoard = initialBoard <!~ ((1, 0), Tile 25 None)
       secondBoard = firstBoard <<~ ((1, 0), Tile 4 Anticlock)
 
+overTest :: SpecWith (Arg Expectation)
+overTest = it "" $ do
+  isOver' `shouldBe` Right True
+    where
+      firstGame = createGame $ take tileSize $ nub $ [33, 0] ++ [0 ..]
+      game = move (4, 0) None firstGame
+      isOver' = isOver <$> game
+
 test :: SpecWith ()
 test = describe "Tsuro.Base" $ do
   singleMoveTest
@@ -57,6 +66,7 @@ test = describe "Tsuro.Base" $ do
   detachedTilePosMoveTest
   outOfBoardMoveTest
   tileAlreadyPutMoveTest
+  overTest
 
 main :: IO ()
 main = hspec test
