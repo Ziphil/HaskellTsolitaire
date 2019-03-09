@@ -183,11 +183,6 @@ isAdjacentStone tilePos (Board _ stones) = any check stones
   where
     check (eachTilePos, _) = eachTilePos == tilePos
 
--- 駒の移動を考えないとき、指定された位置にタイルを置くことができるか確かめ、置けるならば True を返します。
--- ただし、タイルを置いた後に駒が盤面外に出てしまうかどうかは考慮しません。
-canPutTile' :: TilePos -> Board -> Bool
-canPutTile' tilePos board = isEmpty tilePos board && isAdjacentStone tilePos board
-
 -- タイルを指定された位置に置いた後の盤面を返します。
 -- 指定された位置にすでにタイルが置かれている場合は、新たにタイルを置くことはできないので、TileAlreadyPut を返します。
 -- また、指定された位置が何らかの駒と隣接していない場合は、ルール上その位置にタイルを置くことはできないので、DetachedTilePos を返します。
