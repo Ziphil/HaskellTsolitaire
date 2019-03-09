@@ -96,8 +96,8 @@ boardSize = 6
 -- 指定した方向に隣接する位置を返します。
 -- 指定した方向が盤面外の場合は、OutOfBoard を返します。
 adjacent :: Rotation -> TilePos -> TsuroMaybe TilePos
-adjacent rotation (x, y) =
-  make $ case rotation of
+adjacent direction (x, y) =
+  make $ case direction of
     None -> (y > 0, (x, y - 1))
     Clock -> (x < boardSize - 1, (x + 1, y))
     Inverse -> (y < boardSize - 1, (x, y + 1))
