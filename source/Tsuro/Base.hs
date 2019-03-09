@@ -252,7 +252,18 @@ nextHand (Game _ hands) = case hands of
   [] -> Nothing
   hand : _ -> Just hand
 
+restHands :: Game -> Maybe [Tile]
+restHands (Game _ hands) = case hands of
+  [] -> Nothing
+  _ : rest -> Just rest
+
+rotateTile :: Rotation -> Tile -> Tile
+rotateTile rotation (Tile number _) = Tile number rotation
+
 -- 指定された位置に置くべきタイルを置きます。
 -- 不可能な操作をしようとした場合は、Nothing を返します。
-move :: TilePos -> Game -> Maybe Game
-move = undefined
+move :: TilePos -> Rotation -> Game -> Maybe Game
+move tilePos rotation game = makeGame =<< putTileAndUpdate' =<< nextHand game
+  where
+    putTileAndUpdate' tile = putTileAndUpdate tilePos (rotateTile rotation tile) (board game)
+    makeGame board = Game board <$> restHands game
