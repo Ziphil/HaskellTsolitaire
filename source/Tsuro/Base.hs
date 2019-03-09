@@ -6,6 +6,7 @@ module Tsuro.Base where
 import Control.Monad
 import Data.Array
 import Data.Bifunctor
+import Data.Either
 import Data.List
 import Data.Maybe
 import Prelude
@@ -84,16 +85,24 @@ aislesOf (Tile number rotation) = rotateAisles rotation (getAisles number)
 type TilePos = (Int, Int)
 type StonePos = (TilePos, Edge)
 
+data InvalidMove = OutOfBoard | TileAlreadyPut | DetachedTilePos | NoNextHand
+
+type TsuroMaybe = Either InvalidMove
+
 boardSize :: Int
 boardSize = 6
 
 -- 指定した方向に隣接する位置を返します。
--- 指定した方向が盤面外の場合は、Nothing を返します。
-adjacent :: Rotation -> TilePos -> Maybe TilePos
-adjacent None (x, y) = guard (y > 0) >> Just (x, y - 1)
-adjacent Clock (x, y) = guard (x < boardSize - 1) >> Just (x + 1, y)
-adjacent Inverse (x, y) = guard (y < boardSize - 1) >> Just (x, y + 1)
-adjacent Anticlock (x, y) = guard (x > 0) >> Just (x - 1, y)
+-- 指定した方向が盤面外の場合は、OutOfBoard を返します。
+adjacent :: Rotation -> TilePos -> TsuroMaybe TilePos
+adjacent rotation (x, y) =
+  case rotation of
+    None -> make (y > 0) (x, y - 1)
+    Clock -> make (x < boardSize - 1) (x + 1, y)
+    Inverse -> make (y < boardSize - 1) (x, y + 1)
+    Anticlock -> make (x > 0) (x - 1, y)
+  where
+    make pred pos = if pred then Left OutOfBoard else Right pos
 
 newtype Tiles = Tiles (Array TilePos (Maybe Tile))
   deriving (Eq, Show)
@@ -104,17 +113,17 @@ emptyTiles = Tiles $ array bounds $ map (, Nothing) (range bounds)
   where
     bounds = ((0, 0), (boardSize - 1, boardSize - 1))
 
-liftMaybe :: (Maybe a, b) -> Maybe (a, b)
-liftMaybe (Just s, t) = Just (s, t)
-liftMaybe (Nothing, _) = Nothing
+liftEither :: (Either a b, c) -> Either a (b, c)
+liftEither (Right s, t) = Right (s, t)
+liftEither (Left s, _) = Left s
 
 -- 見た目上で同じ場所を表すもう一方の駒位置を返します。
 -- 例えば、横に隣り合う 2 つのマスの間の上側は、左側のマスから見て RightTop の位置ですが、右側のマスから見て LeftTop の位置でもあります。
 -- このように、見た目では同じ場所でも駒位置としては 2 種類の表現があり、この関数は自身とは別のもう一方の表現を返します。
--- 駒位置が盤面の縁を表している場合は、駒位置の表現は 1 種類しかあり得ないため、Nothing を返します。
-switch :: StonePos -> Maybe StonePos
+-- 駒位置が盤面の縁を表している場合は、駒位置の表現は 1 種類しかあり得ないため、OutOfBoard を返します。
+switch :: StonePos -> TsuroMaybe StonePos
 switch (pos, edge) =
-  liftMaybe $ make $ case edge of
+  liftEither $ make $ case edge of
     TopLeft -> (None, BottomLeft)
     TopRight -> (None, BottomRight)
     RightTop -> (Clock, LeftTop)
@@ -141,11 +150,11 @@ updateTile :: TilePos -> Tile -> Tiles -> Tiles
 updateTile tilePos tile (Tiles tiles) = Tiles $ tiles // [(tilePos, Just tile)]
 
 -- 盤面に置かれているタイルの通路に沿って、与えられた駒位置から可能な限り進んだときに到達する駒位置を返します。
--- 進む途中で盤面外に出てしまう場合は、Nothing を返します。
-advanceStone :: Tiles -> StonePos -> Maybe StonePos
+-- 進む途中で盤面外に出てしまう場合は、OutOfBoard を返します。
+advanceStone :: Tiles -> StonePos -> TsuroMaybe StonePos
 advanceStone (Tiles tiles) (tilePos, edge) =
   case tiles ! tilePos of
-    Nothing -> Just (tilePos, edge)
+    Nothing -> Right (tilePos, edge)
     Just tile -> advanceStone (Tiles tiles) =<< nextStonePos
       where
         nextStonePos = switch (tilePos, nextEdge)
@@ -179,47 +188,47 @@ canPutTile' :: TilePos -> Board -> Bool
 canPutTile' tilePos board = isEmpty tilePos board && isAdjacentStone tilePos board
 
 -- タイルを指定された位置に置いた後の盤面を返します。
--- 指定された位置にすでにタイルが置かれている場合は、新たにタイルを置くことはできないので、Nothing を返します。
+-- 指定された位置にすでにタイルが置かれている場合は、新たにタイルを置くことはできないので、TileAlreadyPut を返します。
 -- この関数単独では駒を動かしません。
-putTile :: TilePos -> Tile -> Board -> Maybe Board
+putTile :: TilePos -> Tile -> Board -> TsuroMaybe Board
 putTile tilePos tile board =
   if canPutTile' tilePos board
-    then Just $ Board nextTiles (stones board)
-    else Nothing
+    then Right $ Board nextTiles (stones board)
+    else Left TileAlreadyPut
   where
     nextTiles = updateTile tilePos tile (tiles board)
 
 -- 現在の盤面に従って全ての駒を移動させ、その結果の盤面を返します。
--- 進む途中で盤面外に出てしまうような駒が 1 つでもある場合は、Nothing を返します。
-advanceStones :: Board -> Maybe Board
+-- 進む途中で盤面外に出てしまうような駒が 1 つでもある場合は、OutOfBoard を返します。
+advanceStones :: Board -> TsuroMaybe Board
 advanceStones (Board tiles stones) = 
   case mapM (advanceStone tiles) stones of
-    Nothing -> Nothing
-    Just nextStones -> Just $ Board tiles nextStones
+    Left error -> Left error
+    Right nextStones -> Right $ Board tiles nextStones
 
 canAdvenceStones :: Board -> Bool
-canAdvenceStones = isJust . advanceStones
+canAdvenceStones = isRight . advanceStones
 
 -- タイルを指定された位置に置き、さらにその後の盤面に従って全ての駒を移動させ、その結果の盤面を返します。
--- 不可能な操作をしようとした場合は、Nothing を返します。
-putTileAndUpdate :: TilePos -> Tile -> Board -> Maybe Board
+-- 不可能な操作をしようとした場合は、その原因を示すエラー値を返します。
+putTileAndUpdate :: TilePos -> Tile -> Board -> TsuroMaybe Board
 putTileAndUpdate tilePos tile = advanceStones <=< putTile tilePos tile
 
 -- 指定された位置にタイルを置くことができるか確かめ、置けるならば True を返します。
 canPutTile :: TilePos -> Tile -> Board -> Bool
-canPutTile = ((isJust .) .) . putTileAndUpdate
+canPutTile = ((isRight .) .) . putTileAndUpdate
 
 -- 指定された手を実行した後の盤面を返します。
 -- 不可能な操作をしようとした場合は、Nothing を返します。
 infixl 6 <<~
-(<<~) :: Board -> (TilePos, Tile) -> Maybe Board
+(<<~) :: Board -> (TilePos, Tile) -> TsuroMaybe Board
 (<<~) = flip $ uncurry putTileAndUpdate
 
 -- 指定された手を実行した後の盤面を返します。
 -- 不可能な操作をしようとした場合は、エラーが発生します。
 infixl 6 <!~
 (<!~) :: Board -> (TilePos, Tile) -> Board
-(<!~) = (fromJust .) . (<<~)
+(<!~) = (either (error "") id .) . (<<~)
 
 data Game = Game {board :: Board, hands :: [Tile]}
   deriving (Eq, Show)
@@ -246,23 +255,23 @@ initialGame :: RandomGen g => g -> Game
 initialGame gen = Game initialBoard (initialHands gen)
 
 -- 次に置くべきタイルを返します。
--- 全てのタイルを置き切っていて置くべきタイルが残っていない場合は、Nothing を返します。
-nextHand :: Game -> Maybe Tile
+-- 全てのタイルを置き切っていて置くべきタイルが残っていない場合は、NoNextHand を返します。
+nextHand :: Game -> TsuroMaybe Tile
 nextHand (Game _ hands) = case hands of
-  [] -> Nothing
-  hand : _ -> Just hand
+  [] -> Left NoNextHand
+  hand : _ -> Right hand
 
-restHands :: Game -> Maybe [Tile]
+restHands :: Game -> TsuroMaybe [Tile]
 restHands (Game _ hands) = case hands of
-  [] -> Nothing
-  _ : rest -> Just rest
+  [] -> Left NoNextHand
+  _ : rest -> Right rest
 
 rotateTile :: Rotation -> Tile -> Tile
 rotateTile rotation (Tile number _) = Tile number rotation
 
 -- 指定された位置に置くべきタイルを置きます。
 -- 不可能な操作をしようとした場合は、Nothing を返します。
-move :: TilePos -> Rotation -> Game -> Maybe Game
+move :: TilePos -> Rotation -> Game -> TsuroMaybe Game
 move tilePos rotation game = makeGame =<< putTileAndUpdate' =<< nextHand game
   where
     putTileAndUpdate' tile = putTileAndUpdate tilePos (rotateTile rotation tile) (board game)
