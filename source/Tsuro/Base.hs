@@ -220,17 +220,13 @@ canPutTileAnywhere tile board = all check (indices $ tileList $ tiles board)
   where
     check pos = canPutTile pos tile board
 
--- 指定された手を実行した後の盤面を返します。
--- 不可能な操作をしようとした場合は、Nothing を返します。
-infixl 6 <<~
-(<<~) :: Board -> (TilePos, Tile) -> TsuroMaybe Board
-(<<~) = flip $ uncurry putTileAndUpdate
+infixl 6 <@
+(<@) :: Board -> (TilePos, Tile) -> TsuroMaybe Board
+(<@) = flip $ uncurry putTileAndUpdate
 
--- 指定された手を実行した後の盤面を返します。
--- 不可能な操作をしようとした場合は、エラーが発生します。
-infixl 6 <!~
-(<!~) :: Board -> (TilePos, Tile) -> Board
-(<!~) = (either (error "") id .) . (<<~)
+infixl 6 <<@
+(<<@) :: TsuroMaybe Board -> (TilePos, Tile) -> TsuroMaybe Board
+(<<@) = flip $ (=<<) . uncurry putTileAndUpdate
 
 data Game = Game {board :: Board, hands :: [Tile]}
   deriving (Eq, Show)
@@ -298,3 +294,11 @@ isOver :: Game -> Bool
 isOver game = either (const False) check $ nextHand game
   where
     check = not . flip canPutTileAnywhere (board game)
+
+infixl 6 <@@
+(<@@) :: Game -> (TilePos, Rotation) -> TsuroMaybe Game
+(<@@) = flip $ uncurry move
+
+infixl 6 <<@@
+(<<@@) :: TsuroMaybe Game -> (TilePos, Rotation) -> TsuroMaybe Game
+(<<@@) = flip $ (=<<) . uncurry move
