@@ -207,8 +207,8 @@ advanceStones (Board tiles stones) =
     Left error -> Left error
     Right nextStones -> Right $ Board tiles nextStones
 
-canAdvenceStones :: Board -> Bool
-canAdvenceStones = isRight . advanceStones
+canAdvanceStones :: Board -> Bool
+canAdvanceStones = isRight . advanceStones
 
 -- タイルを指定された位置に置き、さらにその後の盤面に従って全ての駒を移動させ、その結果の盤面を返します。
 -- 不可能な操作をしようとした場合は、その原因を示すエラー値を返します。
