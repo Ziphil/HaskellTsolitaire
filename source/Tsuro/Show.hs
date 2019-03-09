@@ -14,10 +14,10 @@ class ShowRec a where
   showRec :: a -> String
 
 instance ShowRec Rotation where
-  showRec Top = "T"
-  showRec Right = "R"
-  showRec Bottom = "B"
-  showRec Left = "L"
+  showRec None = "T"
+  showRec Clock = "R"
+  showRec Inverse = "B"
+  showRec Anticlock = "L"
 
 instance ShowRec Edge where
   showRec TopLeft = "tl"

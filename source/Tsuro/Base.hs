@@ -12,16 +12,16 @@ import Prelude hiding (Left, Right)
 import System.Random
 
 
-data Rotation = Top | Right | Bottom | Left
+data Rotation = None | Clock | Inverse | Anticlock
   deriving (Eq, Enum, Show)
 
 data Edge = TopLeft | TopRight | RightTop | RightBottom | BottomRight | BottomLeft | LeftBottom | LeftTop
   deriving (Eq, Enum, Show)
 
 rotateEdge :: Rotation -> Edge -> Edge
-rotateEdge Top = id
-rotateEdge Right = toEnum . flip mod 8 . (+ 2) . fromEnum
-rotateEdge rotation = rotateEdge (pred rotation) . rotateEdge Right
+rotateEdge None = id
+rotateEdge Clock = toEnum . flip mod 8 . (+ 2) . fromEnum
+rotateEdge rotation = rotateEdge (pred rotation) . rotateEdge Clock
 
 newtype Aisles = Aisles [(Edge, Edge)]
 
@@ -90,10 +90,10 @@ boardSize = 6
 -- 指定した方向に隣接する位置を返します。
 -- 指定した方向が盤面外の場合は、Nothing を返します。
 adjacent :: Rotation -> TilePos -> Maybe TilePos
-adjacent Top (x, y) = guard (y > 0) >> Just (x, y - 1)
-adjacent Right (x, y) = guard (x < boardSize - 1) >> Just (x + 1, y)
-adjacent Bottom (x, y) = guard (y < boardSize - 1) >> Just (x, y + 1)
-adjacent Left (x, y) = guard (x > 0) >> Just (x - 1, y)
+adjacent None (x, y) = guard (y > 0) >> Just (x, y - 1)
+adjacent Clock (x, y) = guard (x < boardSize - 1) >> Just (x + 1, y)
+adjacent Inverse (x, y) = guard (y < boardSize - 1) >> Just (x, y + 1)
+adjacent Anticlock (x, y) = guard (x > 0) >> Just (x - 1, y)
 
 newtype Tiles = Tiles (Array TilePos (Maybe Tile))
   deriving (Eq, Show)
@@ -115,14 +115,14 @@ liftMaybe (Nothing, _) = Nothing
 switch :: StonePos -> Maybe StonePos
 switch (pos, edge) =
   liftMaybe $ make $ case edge of
-    TopLeft -> (Top, BottomLeft)
-    TopRight -> (Top, BottomRight)
-    RightTop -> (Right, LeftTop)
-    RightBottom -> (Right, LeftBottom)
-    BottomRight -> (Bottom, TopRight)
-    BottomLeft -> (Bottom, TopLeft)
-    LeftBottom -> (Left, RightBottom)
-    LeftTop -> (Left, RightTop)
+    TopLeft -> (None, BottomLeft)
+    TopRight -> (None, BottomRight)
+    RightTop -> (Clock, LeftTop)
+    RightBottom -> (Clock, LeftBottom)
+    BottomRight -> (Inverse, TopRight)
+    BottomLeft -> (Inverse, TopLeft)
+    LeftBottom -> (Anticlock, RightBottom)
+    LeftTop -> (Anticlock, RightTop)
   where
     make (direction, edge) = (adjacent direction pos, edge)
     
@@ -229,7 +229,7 @@ nubRandomRs (low, high) gen = take (high - low + 1) $ nub $ randomRs (low, high)
 
 -- 初期状態の残りタイルをシャッフルしない状態で返します。
 initialHands' :: [Tile]
-initialHands' = map (flip Tile Top) [0 .. 34]
+initialHands' = map (flip Tile None) [0 .. 34]
 
 -- 初期状態の残りタイルを返します。
 initialHands :: RandomGen g => g -> [Tile]
