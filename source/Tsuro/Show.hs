@@ -32,6 +32,9 @@ instance ShowRec Edge where
 instance ShowRec Tile where
   showRec (Tile number rotation) = show number ++ showRec rotation
 
+instance ShowRec TilePos where
+  showRec (x, y) = show (y + 1) ++ ["ABCDEF" !! x]
+
 pad :: Int -> String -> String
 pad size string = replicate (size - length string) ' ' ++ string
 
@@ -47,7 +50,7 @@ instance ShowRec Tiles where
 instance ShowRec [StonePos] where
   showRec stones = intercalate ", " $ map showRec' stones
     where
-      showRec' ((x, y), edge) = show (y + 1) ++ ["ABCDEF" !! x] ++ showRec edge
+      showRec' (tilePos, edge) = showRec tilePos ++ showRec edge
 
 instance ShowRec Board where
   showRec (Board tiles stones) = showRec tiles ++ "\n" ++ showRec stones
