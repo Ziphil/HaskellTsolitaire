@@ -1,0 +1,6 @@
+.stack-work
+.vscode
+*~
+tsuro.cabal
+desktop.ini
+Thumbs.db

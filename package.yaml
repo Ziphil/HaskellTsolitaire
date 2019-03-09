@@ -1,0 +1,39 @@
+name: "tsuro"
+version: "1.0.0"
+github: "githubuser/Tsuro"
+license: BSD3
+author: "Ziphil"
+maintainer: "example@example.com"
+copyright: "2019 Ziphil"
+
+description: "Please see the README on GitHub at <https://github.com/githubuser/Tsuro#readme>"
+
+dependencies:
+  - base >= 4.7 && < 5
+  - array
+  - hspec
+
+library:
+  source-dirs: source
+
+executables:
+  tsuro-exe:
+    main: Main.hs
+    source-dirs: application
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - tsuro
+
+tests:
+  tsuro-test:
+    main: Spec.hs
+    source-dirs: test
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - tsuro
