@@ -197,10 +197,7 @@ putTile tilePos tile board = unless isEmpty' (Left TileAlreadyPut) >> unless isA
 -- 現在の盤面に従って全ての駒を移動させ、その結果の盤面を返します。
 -- 進む途中で盤面外に出てしまうような駒が 1 つでもある場合は、OutOfBoard を返します。
 advanceStones :: Board -> TsuroMaybe Board
-advanceStones (Board tiles stones) = 
-  case mapM (advanceStone tiles) stones of
-    Left error -> Left error
-    Right nextStones -> Right $ Board tiles nextStones
+advanceStones (Board tiles stones) = Board tiles <$> mapM (advanceStone tiles) stones
 
 canAdvanceStones :: Board -> Bool
 canAdvanceStones = isRight . advanceStones
