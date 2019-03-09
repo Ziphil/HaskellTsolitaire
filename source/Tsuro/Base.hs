@@ -24,7 +24,7 @@ rotateEdge None = id
 rotateEdge Clock = toEnum . flip mod 8 . (+ 2) . fromEnum
 rotateEdge rotation = rotateEdge (pred rotation) . rotateEdge Clock
 
-newtype Aisles = Aisles [(Edge, Edge)]
+newtype Aisles = Aisles {aisleList :: [(Edge, Edge)]}
 
 bimapSame :: Bifunctor p => (a -> b) -> p a a -> p b b
 bimapSame func = bimap func func
@@ -105,7 +105,7 @@ adjacent direction (x, y) =
   where
     make (pred, pos) = unless pred (Left OutOfBoard) >> Right pos
 
-newtype Tiles = Tiles (Array TilePos (Maybe Tile))
+newtype Tiles = Tiles {tileList :: (Array TilePos (Maybe Tile))}
   deriving (Eq, Show)
 
 -- 空の盤面を返します。
@@ -211,6 +211,12 @@ putTileAndUpdate tilePos tile = advanceStones <=< putTile tilePos tile
 canPutTile :: TilePos -> Tile -> Board -> Bool
 canPutTile = ((isRight .) .) . putTileAndUpdate
 
+-- 指定されたタイルを置ける位置が存在するか確かめ、存在するならば True を返します。
+canPutTileAnywhere :: Tile -> Board -> Bool
+canPutTileAnywhere tile board = all check (indices $ tileList $ tiles board)
+  where
+    check pos = canPutTile pos tile board
+
 -- 指定された手を実行した後の盤面を返します。
 -- 不可能な操作をしようとした場合は、Nothing を返します。
 infixl 6 <<~
@@ -267,3 +273,13 @@ move tilePos rotation game = makeGame =<< putTileAndUpdate' =<< nextHand game
   where
     putTileAndUpdate' tile = putTileAndUpdate tilePos (rotateTile rotation tile) (board game)
     makeGame board = Game board <$> restHands game
+
+-- ゲームをクリアしていれば True を返します。
+isCleared :: Game -> Bool
+isCleared (Game _ hands) = null hands
+
+-- 次に置くべきタイルを置ける場所がなく、これ以上ゲームを進められない場合に、True を返します。
+isOver :: Game -> Bool
+isOver game = either (const False) check $ nextHand game
+  where
+    check = not . flip canPutTileAnywhere (board game)
