@@ -54,7 +54,7 @@ outOfBoardMoveTest = it "fails when attempting to put a tile which leads a stone
       board = initialBoard <@ ((5, 1), Tile 11 None) <<@ ((5, 2), Tile 8 Inverse)
 
 tileAlreadyPutMoveTest :: SpecWith (Arg Expectation)
-tileAlreadyPutMoveTest = it "fails when attempting to put a tile which leads a stone out of the board" $ do
+tileAlreadyPutMoveTest = it "fails when attempting to put a tile where some tile is already put" $ do
   board `shouldBe` Left TileAlreadyPut
     where
       board = initialBoard <@ ((1, 0), Tile 25 None) <<@ ((1, 0), Tile 4 Anticlock)
