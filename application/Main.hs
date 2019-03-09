@@ -3,9 +3,9 @@
 
 module Main where
 
-import Prelude hiding (Left, Right)
+import Tsuro.Interface
+import Prelude
 
 
 main :: IO ()
-main = do
-  putStrLn "こんにちは!!"
+main = start

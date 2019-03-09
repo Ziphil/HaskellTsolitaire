@@ -6,7 +6,13 @@ module Tsuro.Interface where
 import Tsuro.Base
 import Tsuro.Read
 import Tsuro.Show
+import System.Random
 
+
+start :: IO ()
+start = do
+  gen <- getStdGen
+  turn $ initialGame gen
 
 turn :: Game -> IO ()
 turn game = do
