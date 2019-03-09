@@ -114,9 +114,9 @@ emptyTiles = Tiles $ array bounds $ map (, Nothing) (range bounds)
   where
     bounds = ((0, 0), (boardSize - 1, boardSize - 1))
 
-liftEither :: (Either a b, c) -> Either a (b, c)
-liftEither (Right s, t) = Right (s, t)
-liftEither (Left s, _) = Left s
+liftFstEither :: (Either a b, c) -> Either a (b, c)
+liftFstEither (Right s, t) = Right (s, t)
+liftFstEither (Left s, _) = Left s
 
 -- 見た目上で同じ場所を表すもう一方の駒位置を返します。
 -- 例えば、横に隣り合う 2 つのマスの間の上側は、左側のマスから見て RightTop の位置ですが、右側のマスから見て LeftTop の位置でもあります。
@@ -124,7 +124,7 @@ liftEither (Left s, _) = Left s
 -- 駒位置が盤面の縁を表している場合は、駒位置の表現は 1 種類しかあり得ないため、OutOfBoard を返します。
 switch :: StonePos -> TsuroMaybe StonePos
 switch (pos, edge) =
-  liftEither $ make $ case edge of
+  liftFstEither $ make $ case edge of
     TopLeft -> (None, BottomLeft)
     TopRight -> (None, BottomRight)
     RightTop -> (Clock, LeftTop)
@@ -139,7 +139,7 @@ switch (pos, edge) =
 -- 端から通路情報を辿ることで到達する反対側の端を返します。
 -- 通路情報が十分ない (8 ヶ所の端のうち別の端と繋がっていない端が存在する) 場合、エラーが発生します。
 opposite :: Edge -> Aisles -> Edge
-opposite edge (Aisles aisles) = head $ mapMaybe choose aisles
+opposite edge (Aisles aisleList) = head $ mapMaybe choose aisleList
   where
     choose (startEdge, endEdge)
       | startEdge == edge = Just endEdge
@@ -148,15 +148,15 @@ opposite edge (Aisles aisles) = head $ mapMaybe choose aisles
 
 -- 指定された位置のタイルを指定されたタイルで置き換え、その結果の盤面を返します。
 updateTile :: TilePos -> Tile -> Tiles -> Tiles
-updateTile tilePos tile (Tiles tiles) = Tiles $ tiles // [(tilePos, Just tile)]
+updateTile tilePos tile (Tiles tileList) = Tiles $ tileList // [(tilePos, Just tile)]
 
 -- 盤面に置かれているタイルの通路に沿って、与えられた駒位置から可能な限り進んだときに到達する駒位置を返します。
 -- 進む途中で盤面外に出てしまう場合は、OutOfBoard を返します。
 advanceStone :: Tiles -> StonePos -> TsuroMaybe StonePos
-advanceStone (Tiles tiles) (tilePos, edge) =
-  case tiles ! tilePos of
+advanceStone (Tiles tileList) (tilePos, edge) =
+  case tileList ! tilePos of
     Nothing -> Right (tilePos, edge)
-    Just tile -> advanceStone (Tiles tiles) =<< nextStonePos
+    Just tile -> advanceStone (Tiles tileList) =<< nextStonePos
       where
         nextStonePos = switch (tilePos, nextEdge)
         nextEdge = opposite edge (aislesOf tile)
@@ -174,7 +174,7 @@ initialBoard = Board emptyTiles initialStones
 
 -- 指定された位置にタイルが置かれていないか確かめ、置かれていなければ True を返します。
 isEmpty :: TilePos -> Board -> Bool
-isEmpty tilePos (Board (Tiles tiles) _) = isNothing (tiles ! tilePos)
+isEmpty tilePos (Board (Tiles tileList) _) = isNothing (tileList ! tilePos)
 
 -- 指定された位置が何らかの駒と隣接しているかどうか確かめ、隣接していれば True を返します。
 -- この関数が False を返すような位置には、ルール上タイルを置くことができません。
