@@ -190,14 +190,14 @@ canPutTile' tilePos board = isEmpty tilePos board && isAdjacentStone tilePos boa
 
 -- タイルを指定された位置に置いた後の盤面を返します。
 -- 指定された位置にすでにタイルが置かれている場合は、新たにタイルを置くことはできないので、TileAlreadyPut を返します。
+-- また、指定された位置が何らかの駒と隣接していない場合は、ルール上その位置にタイルを置くことはできないので、DetachedTilePos を返します。
 -- この関数単独では駒を動かしません。
 putTile :: TilePos -> Tile -> Board -> TsuroMaybe Board
-putTile tilePos tile board =
-  if canPutTile' tilePos board
-    then Right $ Board nextTiles (stones board)
-    else Left TileAlreadyPut
+putTile tilePos tile board = unless isEmpty' (Left TileAlreadyPut) >> unless isAdjacentStone' (Left DetachedTilePos) >> Right nextBoard
   where
-    nextTiles = updateTile tilePos tile (tiles board)
+    isEmpty' = isEmpty tilePos board
+    isAdjacentStone' = isAdjacentStone tilePos board
+    nextBoard = Board (updateTile tilePos tile (tiles board)) (stones board)
 
 -- 現在の盤面に従って全ての駒を移動させ、その結果の盤面を返します。
 -- 進む途中で盤面外に出てしまうような駒が 1 つでもある場合は、OutOfBoard を返します。
