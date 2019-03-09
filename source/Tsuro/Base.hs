@@ -93,6 +93,9 @@ type TsuroMaybe = Either InvalidMove
 boardSize :: Int
 boardSize = 6
 
+tileSize :: Int
+tileSize = 35
+
 -- 指定した方向に隣接する位置を返します。
 -- 指定した方向が盤面外の場合は、OutOfBoard を返します。
 adjacent :: Rotation -> TilePos -> TsuroMaybe TilePos
@@ -237,13 +240,13 @@ nubRandomRs (low, high) gen = take (high - low + 1) $ nub $ randomRs (low, high)
 
 -- 初期状態の残りタイルをシャッフルしない状態で返します。
 initialHands' :: [Tile]
-initialHands' = map (flip Tile None) [0 .. 34]
+initialHands' = map (flip Tile None) [0 .. tileSize - 1]
 
 -- 初期状態の残りタイルを返します。
 initialHands :: RandomGen g => g -> [Tile]
 initialHands gen = map fst $ sortOn snd $ zip initialHands' randoms
   where
-    randoms = nubRandomRs (0, 34) gen
+    randoms = nubRandomRs (0, tileSize - 1) gen
 
 -- 初期状態のゲームをシャッフルしない状態で返します。
 initialGame' :: Game
