@@ -276,8 +276,8 @@ type GameMove = (TilePos, Rotation)
 
 -- 指定された位置に置くべきタイルを置きます。
 -- 不可能な操作をしようとした場合は、その原因を示すエラー値を返します。
-move :: GameMove -> Game -> TsuroMaybe Game
-move (pos, rotation) game = makeGame =<< putTileAndUpdate' =<< nextHand game
+applyMove :: GameMove -> Game -> TsuroMaybe Game
+applyMove (pos, rotation) game = makeGame =<< putTileAndUpdate' =<< nextHand game
   where
     putTileAndUpdate' tile = putTileAndUpdate (pos, rotateTile rotation tile) (board game)
     makeGame board = Game board <$> restHands game

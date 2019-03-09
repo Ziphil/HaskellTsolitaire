@@ -21,11 +21,11 @@ infixl 6 <<@
 
 infixl 6 <@@
 (<@@) :: Game -> GameMove -> TsuroMaybe Game
-(<@@) = flip move
+(<@@) = flip applyMove
 
 infixl 6 <<@@
 (<<@@) :: TsuroMaybe Game -> GameMove -> TsuroMaybe Game
-(<<@@) = flip $ (=<<) . move
+(<<@@) = flip $ (=<<) . applyMove
 
 singleMoveTest :: SpecWith (Arg Expectation)
 singleMoveTest = it "returns the resulted board after a single move" $ do
