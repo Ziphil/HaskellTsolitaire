@@ -243,7 +243,9 @@ initialGame gen = Game initialBoard (initialHands gen)
 -- 次に置くべきタイルを返します。
 -- 全てのタイルを置き切っていて置くべきタイルが残っていない場合は、Nothing を返します。
 nextHand :: Game -> Maybe Tile
-nextHand = undefined
+nextHand (Game _ hands) = case hands of
+  [] -> Nothing
+  hand : _ -> Just hand
 
 -- 指定された位置に置くべきタイルを置きます。
 -- 不可能な操作をしようとした場合は、Nothing を返します。
