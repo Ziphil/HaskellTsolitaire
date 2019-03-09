@@ -278,7 +278,7 @@ rotateTile :: Rotation -> Tile -> Tile
 rotateTile rotation (Tile number _) = Tile number rotation
 
 -- 指定された位置に置くべきタイルを置きます。
--- 不可能な操作をしようとした場合は、Nothing を返します。
+-- 不可能な操作をしようとした場合は、その原因を示すエラー値を返します。
 move :: TilePos -> Rotation -> Game -> TsuroMaybe Game
 move tilePos rotation game = makeGame =<< putTileAndUpdate' =<< nextHand game
   where
