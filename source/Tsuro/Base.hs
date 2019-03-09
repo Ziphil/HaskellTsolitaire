@@ -108,7 +108,7 @@ adjacent direction (x, y) =
   where
     make (pred, pos) = unless pred (Left OutOfBoard) >> Right pos
 
-newtype Tiles = Tiles {tileList :: (Array TilePos (Maybe Tile))}
+newtype Tiles = Tiles {tileList :: Array TilePos (Maybe Tile)}
   deriving (Eq, Show)
 
 -- 空の盤面を返します。
