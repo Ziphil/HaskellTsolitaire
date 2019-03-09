@@ -5,6 +5,7 @@ module Tsuro.Base where
 
 import Control.Monad
 import Data.Array
+import Data.Bifunctor
 import Data.List
 import Data.Maybe
 import Prelude hiding (Left, Right)
@@ -24,10 +25,12 @@ rotateEdge rotation = rotateEdge (pred rotation) . rotateEdge Right
 
 newtype Aisles = Aisles [(Edge, Edge)]
 
+bimapSame :: Bifunctor p => (a -> b) -> p a a -> p b b
+bimapSame func = bimap func func
+
 rotateAisles :: Rotation -> Aisles -> Aisles
-rotateAisles = liftAisles . map . mapPair . rotateEdge
+rotateAisles = liftAisles . map . bimapSame . rotateEdge
   where
-    mapPair func (s, t) = (func s, func t)
     liftAisles func (Aisles list) = Aisles (func list)
 
 -- 与えられた番号に対応する通路情報を返します。
@@ -101,6 +104,10 @@ emptyTiles = Tiles $ array bounds $ map (, Nothing) (range bounds)
   where
     bounds = ((0, 0), (boardSize - 1, boardSize - 1))
 
+liftMaybe :: (Maybe a, b) -> Maybe (a, b)
+liftMaybe (Just s, t) = Just (s, t)
+liftMaybe (Nothing, _) = Nothing
+
 -- 見た目上で同じ場所を表すもう一方の駒位置を返します。
 -- 例えば、横に隣り合う 2 つのマスの間の上側は、左側のマスから見て RightTop の位置ですが、右側のマスから見て LeftTop の位置でもあります。
 -- このように、見た目では同じ場所でも駒位置としては 2 種類の表現があり、この関数は自身とは別のもう一方の表現を返します。
@@ -118,8 +125,6 @@ switch (pos, edge) =
     LeftTop -> (Left, RightTop)
   where
     make (direction, edge) = (adjacent direction pos, edge)
-    liftMaybe (Just s, t) = Just (s, t)
-    liftMaybe (Nothing, _) = Nothing
     
 -- 端から通路情報を辿ることで到達する反対側の端を返します。
 -- 通路情報が十分ない (8 ヶ所の端のうち別の端と繋がっていない端が存在する) 場合、エラーが発生します。
