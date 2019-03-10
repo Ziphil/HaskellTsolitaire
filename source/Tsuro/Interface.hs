@@ -19,6 +19,9 @@ start = do
 colorInput :: Pretty a => a -> a
 colorInput = color Yellow
 
+colorHand :: Pretty a => a -> a
+colorHand = style Reverse . color Yellow
+
 colorMessage :: Pretty a => a -> a
 colorMessage = color Magenta
 
@@ -26,9 +29,9 @@ colorError :: Pretty a => a -> a
 colorError = color Red
 
 showInputString :: Game -> String
-showInputString game = colorInput $ either (const "") show' (number <$> nextHand game)
+showInputString game = either (const "") show' (number <$> nextHand game)
   where
-    show' = interpose "<?> " " -> " . show
+    show' = interpose (colorInput "<?> ") (colorInput " -> ") . colorHand . pad 2 . show
 
 loop :: Game -> IO ()
 loop game = do
