@@ -7,7 +7,7 @@ import Data.Bifunctor
 
 
 pad :: Int -> String -> String
-pad size list = replicate (size - length list) ' ' ++ list
+pad size string = replicate (size - length string) ' ' ++ string
 
 interpose :: [a] -> [a] -> [a] -> [a]
 interpose left right list = left ++ list ++ right
