@@ -16,8 +16,17 @@ start = do
   gen <- getStdGen
   loop $ initialGame gen
 
+colorInput :: Pretty a => a -> a
+colorInput = color Yellow
+
+colorMessage :: Pretty a => a -> a
+colorMessage = color Magenta
+
+colorError :: Pretty a => a -> a
+colorError = color Red
+
 showInputString :: Game -> String
-showInputString game = either (const "") show' (number <$> nextHand game)
+showInputString game = colorInput $ either (const "") show' (number <$> nextHand game)
   where
     show' = interpose "<?> " " -> " . show
 
@@ -25,11 +34,11 @@ loop :: Game -> IO ()
 loop game = do
   putStrLn $ showRec game
   case (isCleared game, isOver game) of
-    (True, _) -> putStrLn $ color Magenta $ "@ Congratulations! You win the game."
+    (True, _) -> putStrLn $ colorMessage "@ Congratulations! You win the game."
     (False, True) -> do
-      putStr $ color Yellow $ showInputString game
+      putStr $ showInputString game
       putStrLn "---"
-      putStrLn $ color Magenta $ "@ Game over! Try again!"
+      putStrLn $ colorMessage "@ Game over! Try again!"
     (False, False) -> do
       nextGame <- getNextGame game
       putStrLn ""
@@ -37,11 +46,11 @@ loop game = do
 
 inputGameMove :: Game -> IO GameMove
 inputGameMove game = do
-  putStr $ color Yellow $ showInputString game
+  putStr $ showInputString game
   input <- getLine
   case readRec input of
     Nothing -> do
-      putStrLn $ color Red $ "@ Invalid input. Specify the position and rotation in the form like '5FR' or '1BT'."
+      putStrLn $ colorError "@ Invalid input. Specify the position and rotation in the form like '5FR' or '1BT'."
       inputGameMove game
     Just move -> return move
 
@@ -50,12 +59,12 @@ getNextGame game = do
   move <- inputGameMove game
   case applyMove move game of
     Left OutOfBoard -> do
-      putStrLn $ color Red $ "@ Some stone will go out of the board."
+      putStrLn $ colorError "@ Some stone will go out of the board."
       getNextGame game
     Left TileAlreadyPut -> do
-      putStrLn $ color Red $ "@ Some tile is already put there."
+      putStrLn $ colorError "@ Some tile is already put there."
       getNextGame game
     Left DetachedTilePos -> do
-      putStrLn $ color Red $ "@ The specified position is not adjacent to any stone."
+      putStrLn $ colorError "@ The specified position is not adjacent to any stone."
       getNextGame game
     Right game -> return game
