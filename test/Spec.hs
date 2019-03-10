@@ -31,14 +31,14 @@ singleMoveTest = it "returns the resulted board after a single move" $ do
   stone `shouldBe` Right ((2, 0), LeftTop)
     where
       board = initialBoard <@ ((1, 0), Tile 25 Inverse)
-      stone = (!! 0) <$> stones <$> board
+      stone = (!! 0) . stones <$> board
 
 multipleMoveTest :: SpecWith (Arg Expectation)
 multipleMoveTest = it "returns the resulted board after multiple moves" $ do
   stone `shouldBe` Right ((2, 2), LeftBottom)
     where
       board = initialBoard <@ ((1, 0), Tile 31 None) <<@ ((1, 1), Tile 30 None) <<@ ((1, 2), Tile 21 Clock)
-      stone = (!! 0) <$> stones <$> board
+      stone = (!! 0) . stones <$> board
 
 detachedTilePosMoveTest :: SpecWith (Arg Expectation)
 detachedTilePosMoveTest = it "fails when attempting to put a tile at a position adjacent to no stones" $ do

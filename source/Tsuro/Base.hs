@@ -225,9 +225,7 @@ initialHands' = map (flip Tile None) [0 .. tileSize - 1]
 
 -- 初期状態の残りタイルを返します。
 initialHands :: RandomGen g => g -> [Tile]
-initialHands gen = map fst $ sortOn snd $ zip initialHands' randoms
-  where
-    randoms = nubRandomRs (0, tileSize - 1) gen
+initialHands = map fst . sortOn snd . zip initialHands' . nubRandomRs (0, tileSize - 1)
 
 -- 初期状態のゲームをシャッフルしない状態で返します。
 initialGame' :: Game
@@ -235,7 +233,7 @@ initialGame' = Game initialBoard initialHands'
 
 -- 初期状態のゲームを返します。
 initialGame :: RandomGen g => g -> Game
-initialGame gen = Game initialBoard (initialHands gen)
+initialGame = Game initialBoard . initialHands
 
 -- 与えられたタイル番号のリストの順番で手札が出てくるような初期状態のゲームを返します。
 -- タイル番号のリストは、0 以上 34 以下の整数が重複なく過不足なく出現している必要があります。

@@ -3,6 +3,7 @@
 
 module ZiphilUtil where
 
+import Control.Monad
 import Data.Array.IArray
 import Data.Bifunctor
 import Data.Ix
@@ -22,11 +23,11 @@ isPermutation l m = length l == length m && all (flip elem l) m && all (flip ele
 -- 与えられたインデックスのリストに対して、そのインデックスの要素を全て集めたリストを返します。
 infixl 9 !!&
 (!!&) :: [a] -> [Int] -> [a]
-list !!& indices = map (list !!) indices
+(!!&) = map . (!!)
 
 infixl 9 !&
 (!&) :: (IArray a e, IArray a i, Ix i, Ix j) => a i e -> a j i -> a j e
-array !& indices = amap (array !) indices
+(!&) = amap . (!)
 
 liftMaybe :: (Maybe a, Maybe b) -> Maybe (a, b)
 liftMaybe (Just s, Just t) = Just (s, t)
@@ -41,4 +42,4 @@ liftSndEither (t, Right s) = Right (t, s)
 liftSndEither (_, Left s) = Left s
 
 bimapSame :: Bifunctor p => (a -> b) -> p a a -> p b b
-bimapSame func = bimap func func
+bimapSame = join bimap
