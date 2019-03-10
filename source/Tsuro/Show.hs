@@ -38,11 +38,14 @@ instance ShowRec TilePos where
 pad :: Int -> String -> String
 pad size string = replicate (size - length string) ' ' ++ string
 
+interpose :: String -> String -> String -> String
+interpose left right string = left ++ string ++ right
+
 instance ShowRec Tiles where
   showRec (Tiles tiles) = wholeString
     where 
       wholeString = intercalate "\n" $ map rowString boardList
-      rowString y = "[ " ++ unwords (rowList y) ++ " ]"
+      rowString y = interpose "[ " " ]" $ unwords $ rowList y
       rowList y = map (pad 3 . showRec' . (tiles !) . (, y)) boardList
       showRec' = maybe ". " showRec
       boardList = [0 .. boardSize - 1]

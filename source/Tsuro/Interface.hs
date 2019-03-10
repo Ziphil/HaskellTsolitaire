@@ -20,7 +20,7 @@ loop game = do
   case (isCleared game, isOver game) of
     (True, _) -> putStrLn "Congratulations! You win the game."
     (False, True) -> do
-      putStrLn $ either (const "") (\s -> "<?> " ++ showRec s ++ " -> ---") (nextHand game)
+      putStrLn $ either (const "") (interpose "<?> " " -> ---" . showRec) (nextHand game)
       putStrLn "Game over! Try again!"
     (False, False) -> do
       nextGame <- getNextGame game
@@ -28,7 +28,7 @@ loop game = do
 
 inputGameMove :: Game -> IO GameMove
 inputGameMove game = do
-  putStr $ either (const "") (\s -> "<?> " ++ showRec s ++ " -> ") (nextHand game)
+  putStr $ either (const "") (interpose "<?> " " -> " . showRec) (nextHand game)
   input <- getLine
   case readRec input of
     Nothing -> putStrLn "! Invalid input." >> inputGameMove game
