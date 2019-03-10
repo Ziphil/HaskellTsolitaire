@@ -28,4 +28,4 @@ instance ReadRec TilePos where
       parseY char = guard (inRange (1, 6) $ digitToInt char) >> Just (digitToInt char - 1)
 
 instance ReadRec GameMove where
-  readRec string = guard (length string == 3) >> liftMaybe (readRec [string !! 0, string !! 1], readRec [string !! 2])
+  readRec string = guard (length string == 3) >> liftMaybe (readRec $ string !!& [0, 1], readRec $ string !!& [2])

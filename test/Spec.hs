@@ -8,7 +8,6 @@ import Control.Monad
 import Data.List
 import Test.Hspec
 import Tsuro.Base
-import Prelude
 
 
 infixl 6 <@

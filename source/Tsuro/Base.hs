@@ -8,7 +8,6 @@ import Data.Array
 import Data.Either
 import Data.List
 import Data.Maybe
-import Prelude
 import System.Random
 import ZiphilUtil
 import ZiphilUtil.Random

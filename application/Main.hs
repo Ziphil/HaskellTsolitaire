@@ -3,9 +3,8 @@
 
 module Main where
 
-import Tsuro.Interface
-import Prelude
+import qualified Tsuro.Interface as Tsuro
 
 
 main :: IO ()
-main = start
+main = Tsuro.start

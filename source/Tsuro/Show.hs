@@ -6,9 +6,8 @@ module Tsuro.Show where
 
 import Data.Array
 import Data.List
-import Tsuro.Base
-import Prelude
 import System.Console.Pretty
+import Tsuro.Base
 import ZiphilUtil
 
 
