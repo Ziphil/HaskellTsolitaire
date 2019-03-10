@@ -72,7 +72,7 @@ getAisles n =
     32 -> [(TopLeft, BottomRight), (TopRight, BottomLeft), (RightTop, LeftTop), (RightBottom, LeftBottom)]
     33 -> [(TopLeft, BottomLeft), (TopRight, BottomRight), (RightTop, LeftTop), (RightBottom, LeftBottom)]
     34 -> [(TopLeft, LeftTop), (TopRight, RightTop), (RightBottom, BottomRight), (BottomLeft, LeftBottom)]
-    _ -> error "Invalid"
+    _ -> error "invalid tile number"
 
 data Tile = Tile {number :: Int, rotation :: Rotation}
   deriving (Eq, Show)
@@ -245,7 +245,7 @@ createGame :: [Int] -> Game
 createGame numbers =
   if isPermutation numbers [0 .. tileSize - 1]
     then Game initialBoard (map (flip Tile None) numbers)
-    else error ""
+    else error "invalid tile numbers"
 
 -- 次に置くべきタイルを返します。
 -- 全てのタイルを置き切っていて置くべきタイルが残っていない場合は、NoNextHand を返します。
