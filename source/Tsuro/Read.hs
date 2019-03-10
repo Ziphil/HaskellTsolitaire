@@ -8,6 +8,7 @@ import Data.Ix
 import Data.List
 import Text.Regex
 import Tsuro.Base
+import ZiphilUtil
 
 
 class ReadRec a where
@@ -25,10 +26,6 @@ string =~ pattern =
   case matchRegexAll (mkRegex pattern) string of
     Nothing -> Nothing
     Just (_, _, _, list) -> Just list
-
-liftMaybe :: (Maybe a, Maybe b) -> Maybe (a, b)
-liftMaybe (Just s, Just t) = Just (s, t)
-liftMaybe (_, _) = Nothing
 
 instance ReadRec TilePos where
   readRec string =

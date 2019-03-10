@@ -5,12 +5,13 @@ module Tsuro.Base where
 
 import Control.Monad
 import Data.Array
-import Data.Bifunctor
 import Data.Either
 import Data.List
 import Data.Maybe
 import Prelude
 import System.Random
+import ZiphilUtil
+import ZiphilUtil.Random
 
 
 data Rotation = None | Clock | Inverse | Anticlock
@@ -25,9 +26,6 @@ rotateEdge Clock = toEnum . flip mod 8 . (+ 2) . fromEnum
 rotateEdge rotation = rotateEdge (pred rotation) . rotateEdge Clock
 
 newtype Aisles = Aisles {aisleList :: [(Edge, Edge)]}
-
-bimapSame :: Bifunctor p => (a -> b) -> p a a -> p b b
-bimapSame func = bimap func func
 
 rotateAisles :: Rotation -> Aisles -> Aisles
 rotateAisles = liftAisles . map . bimapSame . rotateEdge
@@ -116,10 +114,6 @@ emptyTiles :: Tiles
 emptyTiles = Tiles $ array bounds $ map (, Nothing) (range bounds)
   where
     bounds = ((0, 0), (boardSize - 1, boardSize - 1))
-
-liftFstEither :: (Either a b, c) -> Either a (b, c)
-liftFstEither (Right s, t) = Right (s, t)
-liftFstEither (Left s, _) = Left s
 
 -- 見た目上で同じ場所を表すもう一方の駒位置を返します。
 -- 例えば、横に隣り合う 2 つのマスの間の上側は、左側のマスから見て RightTop の位置ですが、右側のマスから見て LeftTop の位置でもあります。
@@ -226,9 +220,6 @@ canPutTileAnywhere tile board = any check (indices $ tileList $ tiles board)
 data Game = Game {board :: Board, hands :: [Tile]}
   deriving (Eq, Show)
 
-nubRandomRs :: RandomGen g => (Int, Int) -> g -> [Int]
-nubRandomRs (low, high) gen = take (high - low + 1) $ nub $ randomRs (low, high) gen
-
 -- 初期状態の残りタイルをシャッフルしない状態で返します。
 initialHands' :: [Tile]
 initialHands' = map (flip Tile None) [0 .. tileSize - 1]
@@ -246,9 +237,6 @@ initialGame' = Game initialBoard initialHands'
 -- 初期状態のゲームを返します。
 initialGame :: RandomGen g => g -> Game
 initialGame gen = Game initialBoard (initialHands gen)
-
-isPermutation :: Eq a => [a] -> [a] -> Bool
-isPermutation l m = length l == length m && all (flip elem l) m && all (flip elem m) l
 
 -- 与えられたタイル番号のリストの順番で手札が出てくるような初期状態のゲームを返します。
 -- タイル番号のリストは、0 以上 34 以下の整数が重複なく過不足なく出現している必要があります。

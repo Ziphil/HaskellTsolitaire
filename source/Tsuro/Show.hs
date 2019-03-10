@@ -8,6 +8,7 @@ import Data.Array
 import Data.List
 import Tsuro.Base
 import Prelude
+import ZiphilUtil
 
 
 class ShowRec a where
@@ -34,12 +35,6 @@ instance ShowRec Tile where
 
 instance ShowRec TilePos where
   showRec (x, y) = show (y + 1) ++ ["ABCDEF" !! x]
-
-pad :: Int -> String -> String
-pad size string = replicate (size - length string) ' ' ++ string
-
-interpose :: String -> String -> String -> String
-interpose left right string = left ++ string ++ right
 
 instance ShowRec Tiles where
   showRec (Tiles tiles) = wholeString

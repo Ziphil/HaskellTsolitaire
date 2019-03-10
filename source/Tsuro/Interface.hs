@@ -8,6 +8,7 @@ import Tsuro.Read
 import Tsuro.Show
 import System.Random
 import System.Console.Pretty
+import ZiphilUtil
 
 
 start :: IO ()
