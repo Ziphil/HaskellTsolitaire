@@ -53,9 +53,7 @@ instance ShowRec [StonePos] where
       showRec' (tilePos, edge) = showRec tilePos ++ showRec edge
 
 instance ShowRec Board where
-  showRec (Board tiles stones) = showRec tiles ++ "\n" ++ showRec stones
+  showRec (Board tiles stones) = showRec tiles ++ " " ++ showRec stones
 
 instance ShowRec Game where
-  showRec game = showRec (board game) ++ "\nNext: " ++ nextHandString
-    where
-      nextHandString = either (const "") showRec (nextHand game)
+  showRec = showRec . board

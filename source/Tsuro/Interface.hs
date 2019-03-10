@@ -12,29 +12,33 @@ import System.Random
 start :: IO ()
 start = do
   gen <- getStdGen
-  turn $ initialGame gen
+  loop $ initialGame gen
 
-turn :: Game -> IO ()
-turn game = do
+loop :: Game -> IO ()
+loop game = do
   putStrLn $ showRec game
-  nextGame <- getNextGame game
-  case (isCleared nextGame, isOver nextGame) of
+  case (isCleared game, isOver game) of
     (True, _) -> putStrLn "Congratulations! You win the game."
-    (False, True) -> putStrLn "Game over! Try again!"
-    (False, False) -> turn nextGame
+    (False, True) -> do
+      putStrLn $ either (const "") (\s -> "<?> " ++ showRec s ++ " -> ---") (nextHand game)
+      putStrLn "Game over! Try again!"
+    (False, False) -> do
+      nextGame <- getNextGame game
+      loop nextGame
 
-inputGameMove :: IO GameMove
-inputGameMove = do
+inputGameMove :: Game -> IO GameMove
+inputGameMove game = do
+  putStr $ either (const "") (\s -> "<?> " ++ showRec s ++ " -> ") (nextHand game)
   input <- getLine
   case readRec input of
-    Nothing -> putStrLn "Invalid input." >> inputGameMove
+    Nothing -> putStrLn "! Invalid input." >> inputGameMove game
     Just move -> return move
 
 getNextGame :: Game -> IO Game
 getNextGame game = do
-  move <- inputGameMove
+  move <- inputGameMove game
   case applyMove move game of
-    Left OutOfBoard -> putStrLn "Some stone will go out of the board." >> getNextGame game
-    Left TileAlreadyPut -> putStrLn "Some tile is already put there." >> getNextGame game
-    Left DetachedTilePos -> putStrLn "The specified position is not adjacent to any stone." >> getNextGame game
+    Left OutOfBoard -> putStrLn "! Some stone will go out of the board." >> getNextGame game
+    Left TileAlreadyPut -> putStrLn "! Some tile is already put there." >> getNextGame game
+    Left DetachedTilePos -> putStrLn "! The specified position is not adjacent to any stone." >> getNextGame game
     Right game -> return game
