@@ -219,7 +219,7 @@ canPutTile = (isRight .) . putTileAndUpdate
 
 -- 指定されたタイルを置ける位置が存在するか確かめ、存在するならば True を返します。
 canPutTileAnywhere :: Tile -> Board -> Bool
-canPutTileAnywhere tile board = all check (indices $ tileList $ tiles board)
+canPutTileAnywhere tile board = any check (indices $ tileList $ tiles board)
   where
     check pos = canPutTile (pos, tile) board
 
