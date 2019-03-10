@@ -2,3 +2,6 @@ resolver: lts-12.14
 
 packages:
   - .
+
+extra-deps:
+  - pretty-terminal-0.1.0.0

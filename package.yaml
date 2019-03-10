@@ -12,6 +12,7 @@ dependencies:
   - base >= 4.7 && < 5
   - array
   - hspec
+  - pretty-terminal
   - random
   - regex-compat
 
