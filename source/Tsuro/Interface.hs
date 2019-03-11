@@ -3,6 +3,7 @@
 
 module Tsuro.Interface where
 
+import Data.List
 import System.Console.Pretty
 import System.Random
 import Tsuro.Base
@@ -23,7 +24,7 @@ colorHand :: Pretty a => a -> a
 colorHand = style Reverse . color Yellow
 
 colorMessage :: Pretty a => a -> a
-colorMessage = color Magenta
+colorMessage = color Cyan
 
 colorError :: Pretty a => a -> a
 colorError = color Red
@@ -51,11 +52,15 @@ inputGameMove :: Game -> IO GameMove
 inputGameMove game = do
   putStr $ showInputString game
   input <- getLine
-  case readRec input of
-    Nothing -> do
-      putStrLn $ colorError "@ Invalid input. Specify the position and rotation in the form like '5FR' or '1BT'."
+  if input == "?"
+    then do
+      putStrLn $ colorMessage $ "@ Possible moves are: " ++ intercalate ", " (map showRec $ possibleMoves game)
       inputGameMove game
-    Just move -> return move
+    else case readRec input of
+      Nothing -> do
+        putStrLn $ colorError "@ Invalid input. Specify the position and rotation in the form like '5FR' or '1BT'."
+        inputGameMove game
+      Just move -> return move
 
 getNextGame :: Game -> IO Game
 getNextGame game = do
