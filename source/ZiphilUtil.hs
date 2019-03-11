@@ -18,6 +18,10 @@ pad size string = replicate (size - length string) ' ' ++ string
 interpose :: [a] -> [a] -> [a] -> [a]
 interpose left right list = left ++ list ++ right
 
+-- 与えられた 2 つのリストの要素の全ての組み合わせから成るリストを返します。
+comb :: [a] -> [b] -> [(a, b)]
+comb = liftA2 (,)
+
 isPermutation :: Eq a => [a] -> [a] -> Bool
 isPermutation l m = length l == length m && all (flip elem l) m && all (flip elem m) l
 

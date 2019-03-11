@@ -269,9 +269,9 @@ applyMove (pos, rotation) game = makeGame =<< putTileAndUpdate' =<< nextHand gam
 
 -- 可能な手のリストを返します。
 possibleMoves :: Game -> [GameMove]
-possibleMoves game = filter check $ zip poss rotations
+possibleMoves game = filter check $ comb poss rotations
   where
-    check (pos, rotation) = either (const False) id $ flip canPutTile (board game) . (pos, ) <$> nextHand game
+    check (pos, rotation) = either (const False) id $ flip canPutTile (board game) . (pos, ) . rotateTile rotation <$> nextHand game
     poss = indices $ tileList $ tiles $ board game
     rotations = enumFrom (toEnum 0)
 
