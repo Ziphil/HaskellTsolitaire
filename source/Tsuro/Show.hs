@@ -59,6 +59,9 @@ instance ShowRec [StonePos] where
 instance ShowRec Board where
   showRec (Board tiles stones) = showRec tiles ++ " " ++ showRec stones
 
+instance ShowRec GameMove where
+  showRec (pos, rotation) = showRec pos ++ showRec rotation
+
 instance ShowRec Game where
   showRec (Game board hands) = turnString ++ "\n" ++ showRec board
     where

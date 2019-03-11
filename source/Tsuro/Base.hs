@@ -267,6 +267,14 @@ applyMove (pos, rotation) game = makeGame =<< putTileAndUpdate' =<< nextHand gam
     putTileAndUpdate' tile = putTileAndUpdate (pos, rotateTile rotation tile) (board game)
     makeGame board = Game board <$> restHands game
 
+-- 可能な手のリストを返します。
+possibleMoves :: Game -> [GameMove]
+possibleMoves game = filter check $ zip poss rotations
+  where
+    check (pos, rotation) = either (const False) id $ flip canPutTile (board game) . (pos, ) <$> nextHand game
+    poss = indices $ tileList $ tiles $ board game
+    rotations = enumFrom (toEnum 0)
+
 -- ゲームをクリアしていれば True を返します。
 isCleared :: Game -> Bool
 isCleared (Game _ hands) = null hands
