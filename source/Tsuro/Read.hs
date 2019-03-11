@@ -22,10 +22,10 @@ instance ReadRec Rotation where
   readRec _ = Nothing
 
 instance ReadRec TilePos where
-  readRec string = guard (length string == 2) >> liftMaybe (parseX $ string !! 1, parseY $ string !! 0)
+  readRec string = guard (length string == 2) >> outA (parseX $ string !! 1, parseY $ string !! 0)
     where
       parseX char = elemIndex char "ABCDEF"
       parseY char = guard (inRange (1, 6) $ digitToInt char) >> Just (digitToInt char - 1)
 
 instance ReadRec GameMove where
-  readRec string = guard (length string == 3) >> liftMaybe (readRec $ string !!& [0, 1], readRec $ string !!& [2])
+  readRec string = guard (length string == 3) >> outA (readRec $ string !!& [0, 1], readRec $ string !!& [2])

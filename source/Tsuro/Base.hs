@@ -27,9 +27,9 @@ rotateEdge rotation = rotateEdge (pred rotation) . rotateEdge Clock
 newtype Aisles = Aisles {aisleList :: [(Edge, Edge)]}
 
 rotateAisles :: Rotation -> Aisles -> Aisles
-rotateAisles = liftAisles . map . bimapSame . rotateEdge
+rotateAisles = outAisles . map . bimapSame . rotateEdge
   where
-    liftAisles func (Aisles list) = Aisles (func list)
+    outAisles func (Aisles list) = Aisles (func list)
 
 -- 与えられた番号に対応する通路情報を返します。
 -- 番号は 0 以上 34 以下でなければならず、それ以外の値が渡された場合はエラーが発生します。
@@ -120,7 +120,7 @@ emptyTiles = Tiles $ array bounds $ map (, Nothing) (range bounds)
 -- 駒位置が盤面の縁を表している場合は、駒位置の表現は 1 種類しかあり得ないため、OutOfBoard を返します。
 switch :: StonePos -> TsuroMaybe StonePos
 switch (pos, edge) =
-  liftFstEither $ make $ case edge of
+  outFstEither $ make $ case edge of
     TopLeft -> (None, BottomLeft)
     TopRight -> (None, BottomRight)
     RightTop -> (Clock, LeftTop)

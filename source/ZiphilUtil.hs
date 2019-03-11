@@ -3,6 +3,7 @@
 
 module ZiphilUtil where
 
+import Control.Applicative
 import Control.Monad
 import Data.Array.IArray
 import Data.Bifunctor
@@ -29,17 +30,16 @@ infixl 9 !&
 (!&) :: (IArray a e, IArray a i, Ix i, Ix j) => a i e -> a j i -> a j e
 (!&) = amap . (!)
 
-liftMaybe :: (Maybe a, Maybe b) -> Maybe (a, b)
-liftMaybe (Just s, Just t) = Just (s, t)
-liftMaybe (_, _) = Nothing
+outA :: Applicative f => (f a, f b) -> f (a, b)
+outA = uncurry $ liftA2 (,)
 
-liftFstEither :: (Either a b, c) -> Either a (b, c)
-liftFstEither (Right s, t) = Right (s, t)
-liftFstEither (Left s, _) = Left s
+outFstEither :: (Either a b, c) -> Either a (b, c)
+outFstEither (Right s, t) = Right (s, t)
+outFstEither (Left s, _) = Left s
 
-liftSndEither :: (c, Either a b) -> Either a (c, b)
-liftSndEither (t, Right s) = Right (t, s)
-liftSndEither (_, Left s) = Left s
+outSndEither :: (c, Either a b) -> Either a (c, b)
+outSndEither (t, Right s) = Right (t, s)
+outSndEither (_, Left s) = Left s
 
 bimapSame :: Bifunctor p => (a -> b) -> p a a -> p b b
 bimapSame = join bimap
