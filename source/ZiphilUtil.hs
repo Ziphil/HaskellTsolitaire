@@ -33,13 +33,11 @@ infixl 9 !&
 outA :: Applicative f => (f a, f b) -> f (a, b)
 outA = uncurry $ liftA2 (,)
 
-outFstEither :: (Either a b, c) -> Either a (b, c)
-outFstEither (Right s, t) = Right (s, t)
-outFstEither (Left s, _) = Left s
+outFstA :: Applicative f => (f a, b) -> f (a, b)
+outFstA = uncurry $ flip $ liftA . flip (,)
 
-outSndEither :: (c, Either a b) -> Either a (c, b)
-outSndEither (t, Right s) = Right (t, s)
-outSndEither (_, Left s) = Left s
+outSndA :: Applicative f => (a, f b) -> f (a, b)
+outSndA = uncurry $ liftA . (,)
 
 bimapSame :: Bifunctor p => (a -> b) -> p a a -> p b b
 bimapSame = join bimap

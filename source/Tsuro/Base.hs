@@ -120,7 +120,7 @@ emptyTiles = Tiles $ array bounds $ map (, Nothing) (range bounds)
 -- 駒位置が盤面の縁を表している場合は、駒位置の表現は 1 種類しかあり得ないため、OutOfBoard を返します。
 switch :: StonePos -> TsuroMaybe StonePos
 switch (pos, edge) =
-  outFstEither $ make $ case edge of
+  outFstA $ make $ case edge of
     TopLeft -> (None, BottomLeft)
     TopRight -> (None, BottomRight)
     RightTop -> (Clock, LeftTop)
