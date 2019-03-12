@@ -3,6 +3,7 @@
 
 module Tsuro.Base where
 
+import Control.Applicative
 import Control.Monad
 import Data.Array
 import Data.Either
@@ -216,6 +217,13 @@ canPutTileAnywhere tile board = any check (indices $ tileList $ tiles board)
   where
     check pos = canPutTile (pos, tile) board
 
+-- 与えられたタイルを置ける位置のリストを返します。
+possiblePoss :: Tile -> Board -> [TilePos]
+possiblePoss tile board = filter check poss
+  where
+    check pos = canPutTile (pos, tile) board
+    poss = indices $ tileList $ tiles board
+
 data Game = Game {board :: Board, hands :: [Tile]}
   deriving (Eq, Show)
 
@@ -269,10 +277,9 @@ applyMove (pos, rotation) game = makeGame =<< putTileAndUpdate' =<< nextHand gam
 
 -- 可能な手のリストを返します。
 possibleMoves :: Game -> [GameMove]
-possibleMoves game = filter check $ comb poss rotations
-  where
-    check (pos, rotation) = either (const False) id $ flip canPutTile (board game) . (pos, ) . rotateTile rotation <$> nextHand game
-    poss = indices $ tileList $ tiles $ board game
+possibleMoves game = concat $ map (liftA2 zip possiblePoss' repeat) rotations
+  where    
+    possiblePoss' rotation = fromRight [] $ flip possiblePoss (board game) . rotateTile rotation <$> nextHand game
     rotations = enumFrom (toEnum 0)
 
 -- ゲームをクリアしていれば True を返します。
