@@ -1,8 +1,4 @@
-{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE TupleSections #-}
 
 
@@ -16,7 +12,6 @@ import Data.List
 import Data.Maybe
 import System.Random
 import ZiphilUtil
-import ZiphilUtil.OverloadedLabels
 import ZiphilUtil.Random
 
 
@@ -115,11 +110,15 @@ adjacent direction (x, y) =
 newtype Tiles = Tiles {tileList :: Array TilePos (Maybe Tile)}
   deriving (Eq, Show)
 
+tilePosBounds :: (TilePos, TilePos)
+tilePosBounds = ((0, 0), (boardSize - 1, boardSize - 1))
+
+wholeTilePoss :: [TilePos]
+wholeTilePoss = range tilePosBounds
+
 -- 空の盤面を返します。
 emptyTiles :: Tiles
-emptyTiles = Tiles $ array bounds $ map (, Nothing) (range bounds)
-  where
-    bounds = ((0, 0), (boardSize - 1, boardSize - 1))
+emptyTiles = Tiles $ array tilePosBounds $ map (, Nothing) wholeTilePoss
 
 -- 見た目上で同じ場所を表すもう一方の駒位置を返します。
 -- 例えば、横に隣り合う 2 つのマスの間の上側は、左側のマスから見て RightTop の位置ですが、右側のマスから見て LeftTop の位置でもあります。
@@ -193,12 +192,12 @@ type TileMove = (TilePos, Tile)
 -- また、指定された位置が何らかの駒と隣接していない場合は、ルール上その位置にタイルを置くことはできないので、DetachedTilePos を返します。
 -- この関数単独では駒を動かしません。
 putTile :: TileMove -> Board -> TsuroMaybe Board
-putTile (pos, tile) board =
-  unless isEmpty' (Left TileAlreadyPut) >> unless isAdjacentStone' (Left DetachedTilePos) >> Right nextBoard
+putTile (pos, tile) board@(Board tiles stones) =
+  unless isPosEmpty (Left TileAlreadyPut) >> unless isPosAdjacentStone (Left DetachedTilePos) >> Right nextBoard
     where
-      isEmpty' = isEmpty pos board
-      isAdjacentStone' = isAdjacentStone pos board
-      nextBoard = Board (updateTile pos tile (tiles board)) (stones board)
+      isPosEmpty = isEmpty pos board
+      isPosAdjacentStone = isAdjacentStone pos board
+      nextBoard = Board (updateTile pos tile tiles) stones
 
 -- 現在の盤面に従って全ての駒を移動させ、その結果の盤面を返します。
 -- 進む途中で盤面外に出てしまうような駒が 1 つでもある場合は、OutOfBoard を返します。
@@ -219,22 +218,14 @@ canPutTile = isRight .^ putTileAndUpdate
 
 -- 指定されたタイルを置ける位置が存在するか確かめ、存在するならば True を返します。
 canPutTileAnywhere :: Tile -> Board -> Bool
-canPutTileAnywhere tile board = any check (indices $ tileList $ tiles board)
-  where
-    check pos = canPutTile (pos, tile) board
+canPutTileAnywhere tile board = any (flip canPutTile board . (, tile)) wholeTilePoss
 
 -- 与えられたタイルを置ける位置のリストを返します。
 possiblePoss :: Tile -> Board -> [TilePos]
-possiblePoss tile board = filter check poss
-  where
-    check pos = canPutTile (pos, tile) board
-    poss = indices $ tileList $ tiles board
+possiblePoss tile board = filter (flip canPutTile board . (, tile)) wholeTilePoss
 
 data Game = Game {board :: Board, hands :: [Tile]}
   deriving (Eq, Show)
-
-instance Has "board" Game Board where
-  from _ (Game board _) = board
 
 -- 初期状態の残りタイルをシャッフルしない状態で返します。
 initialHands' :: [Tile]
@@ -279,13 +270,10 @@ type GameMove = (TilePos, Rotation)
 data GameState = GameState {board :: Board, hand :: Tile}
   deriving (Eq, Show)
 
-instance Has "board" GameState Board where
-  from _ (GameState board _) = board
-
 -- ゲームからゲーム状況を取り出します。
 -- ゲームにクリアしていて次に置くべきタイルがない場合は NoNextHand を返します。
 gameStateOf :: Game -> TsuroMaybe GameState
-gameStateOf game = GameState (#board game) <$> nextHand game
+gameStateOf game@(Game board _) = GameState board <$> nextHand game
 
 applyMove' :: GameMove -> GameState -> TsuroMaybe Board
 applyMove' (pos, rotation) (GameState board hand) = putTileAndUpdate (pos, rotateTile rotation hand) board
@@ -298,7 +286,7 @@ applyMove move game = makeGame =<< applyMove' move =<< gameStateOf game
     makeGame board = Game board <$> restHands game
 
 possibleMoves' :: GameState -> [GameMove]
-possibleMoves' (GameState board hand) = concat $ map (liftA2 zip possiblePoss' repeat) rotations
+possibleMoves' (GameState board hand) = concatMap (liftA2 zip possiblePoss' repeat) rotations
   where    
     possiblePoss' rotation = possiblePoss (rotateTile rotation hand) board
     rotations = enumFrom (toEnum 0)
@@ -313,6 +301,6 @@ isCleared (Game _ hands) = null hands
 
 -- 次に置くべきタイルを置ける場所がなく、これ以上ゲームを進められない場合に、True を返します。
 isOver :: Game -> Bool
-isOver game = either (const False) check $ nextHand game
+isOver game@(Game board _) = either (const False) check $ nextHand game
   where
-    check = not . flip canPutTileAnywhere (#board game)
+    check = not . flip canPutTileAnywhere board
