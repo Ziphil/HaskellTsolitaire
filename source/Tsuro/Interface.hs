@@ -54,7 +54,7 @@ inputGameMove game = do
   input <- getLine
   if input == "?"
     then do
-      putStrLn $ colorMessage $ "@ Possible moves are: " ++ intercalate ", " (map showRec $ possibleMoves game)
+      putStrLn $ colorMessage $ "@ Possible moves: " ++ unwords (map showRec $ possibleMoves game)
       inputGameMove game
     else case readRec input of
       Nothing -> do
