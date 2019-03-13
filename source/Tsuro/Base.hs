@@ -209,7 +209,7 @@ putTileAndUpdate move = advanceStones <=< putTile move
 
 -- 指定された位置にタイルを置くことができるか確かめ、置けるならば True を返します。
 canPutTile :: TileMove -> Board -> Bool
-canPutTile = (isRight .) . putTileAndUpdate
+canPutTile = isRight .^ putTileAndUpdate
 
 -- 指定されたタイルを置ける位置が存在するか確かめ、存在するならば True を返します。
 canPutTileAnywhere :: Tile -> Board -> Bool
