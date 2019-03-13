@@ -1,3 +1,8 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE TupleSections #-}
 
 
@@ -11,6 +16,7 @@ import Data.List
 import Data.Maybe
 import System.Random
 import ZiphilUtil
+import ZiphilUtil.OverloadedLabels
 import ZiphilUtil.Random
 
 
@@ -227,6 +233,9 @@ possiblePoss tile board = filter check poss
 data Game = Game {board :: Board, hands :: [Tile]}
   deriving (Eq, Show)
 
+instance Has "board" Game Board where
+  from _ (Game board _) = board
+
 -- 初期状態の残りタイルをシャッフルしない状態で返します。
 initialHands' :: [Tile]
 initialHands' = map (flip Tile None) [0 .. tileSize - 1]
@@ -267,20 +276,36 @@ rotateTile rotation (Tile number _) = Tile number rotation
 
 type GameMove = (TilePos, Rotation)
 
+data GameState = GameState {board :: Board, hand :: Tile}
+  deriving (Eq, Show)
+
+instance Has "board" GameState Board where
+  from _ (GameState board _) = board
+
+-- ゲームからゲーム状況を取り出します。
+-- ゲームにクリアしていて次に置くべきタイルがない場合は NoNextHand を返します。
+gameStateOf :: Game -> TsuroMaybe GameState
+gameStateOf game = GameState (#board game) <$> nextHand game
+
+applyMove' :: GameMove -> GameState -> TsuroMaybe Board
+applyMove' (pos, rotation) (GameState board hand) = putTileAndUpdate (pos, rotateTile rotation hand) board
+
 -- 指定された位置に置くべきタイルを置きます。
 -- 不可能な操作をしようとした場合は、その原因を示すエラー値を返します。
 applyMove :: GameMove -> Game -> TsuroMaybe Game
-applyMove (pos, rotation) game = makeGame =<< putTileAndUpdate' =<< nextHand game
+applyMove move game = makeGame =<< applyMove' move =<< gameStateOf game
   where
-    putTileAndUpdate' tile = putTileAndUpdate (pos, rotateTile rotation tile) (board game)
     makeGame board = Game board <$> restHands game
+
+possibleMoves' :: GameState -> [GameMove]
+possibleMoves' (GameState board hand) = concat $ map (liftA2 zip possiblePoss' repeat) rotations
+  where    
+    possiblePoss' rotation = possiblePoss (rotateTile rotation hand) board
+    rotations = enumFrom (toEnum 0)
 
 -- 可能な手のリストを返します。
 possibleMoves :: Game -> [GameMove]
-possibleMoves game = concat $ map (liftA2 zip possiblePoss' repeat) rotations
-  where    
-    possiblePoss' rotation = fromRight [] $ flip possiblePoss (board game) . rotateTile rotation <$> nextHand game
-    rotations = enumFrom (toEnum 0)
+possibleMoves game = fromRight [] $ possibleMoves' <$> gameStateOf game
 
 -- ゲームをクリアしていれば True を返します。
 isCleared :: Game -> Bool
@@ -290,4 +315,4 @@ isCleared (Game _ hands) = null hands
 isOver :: Game -> Bool
 isOver game = either (const False) check $ nextHand game
   where
-    check = not . flip canPutTileAnywhere (board game)
+    check = not . flip canPutTileAnywhere (#board game)
