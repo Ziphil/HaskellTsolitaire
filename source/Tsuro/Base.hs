@@ -95,7 +95,7 @@ data Tile = Tile {number :: Int, rotation :: Rotation}
 aislesOf :: Tile -> Aisles
 aislesOf (Tile number rotation) = rotateAisles rotation (getAisles number)
 
--- 通路の対称性によって回転が異なっていても見た目が同じになるタイルに対し、回転の情報を正規化したタイルを返します。
+-- 通路の対称性によって回転が異なっていても見た目が同じになるタイルに対し、回転情報を正規化したタイルを返します。
 -- 具体的には、以下のような動作をします。
 -- 90° 回転でもとに戻るタイルの場合、回転を全て None にします。
 -- 90° 回転ではもとに戻らず 180° 回転でもとに戻るタイルの場合、回転を None か Clock にします。
@@ -105,6 +105,11 @@ normalize tile@(Tile number rotation) =
     Asymmetric -> tile
     Dyad -> Tile number $ toEnum $ flip mod 2 $ fromEnum rotation
     Tetrad -> Tile number None
+
+-- 番号と回転情報から、回転情報を正規化した状態のタイルを生成します。
+-- この関数でタイルを生成している限りでは、タイルとその見た目は 1 対 1 に対応します。
+createTile :: Int -> Rotation -> Tile
+createTile = normalize .^ Tile
 
 type TilePos = (Int, Int)
 type StonePos = (TilePos, Edge)
@@ -283,7 +288,7 @@ restHands (Game _ []) = Left NoNextHand
 restHands (Game _ (_ : rest)) = Right rest
 
 rotateTile :: Rotation -> Tile -> Tile
-rotateTile rotation (Tile number _) = Tile number rotation
+rotateTile rotation (Tile number _) = createTile number rotation
 
 type GameMove = (TilePos, Rotation)
 
