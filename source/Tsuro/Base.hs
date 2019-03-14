@@ -166,12 +166,7 @@ switch (pos, edge) =
 -- 端から通路情報を辿ることで到達する反対側の端を返します。
 -- 通路情報が十分ない (8 ヶ所の端のうち別の端と繋がっていない端が存在する) 場合、エラーが発生します。
 opposite :: Edge -> Aisles -> Edge
-opposite edge (Aisles aisleSet) = fromJust $ join $ find isJust $ Set.map choose aisleSet
-  where
-    choose (startEdge, endEdge)
-      | startEdge == edge = Just endEdge
-      | endEdge == edge = Just startEdge
-      | otherwise = Nothing
+opposite edge (Aisles aisleSet) = fromJust $ snd <$> find ((== edge) . fst) aisleSet
 
 -- 指定された位置のタイルを指定されたタイルで置き換え、その結果の盤面を返します。
 updateTile :: TilePos -> Tile -> Tiles -> Tiles
