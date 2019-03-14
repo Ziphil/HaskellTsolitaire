@@ -206,9 +206,7 @@ isEmpty tilePos (Board (Tiles tileList) _) = isNothing (tileList ! tilePos)
 -- 指定された位置が何らかの駒と隣接しているかどうか確かめ、隣接していれば True を返します。
 -- この関数が False を返すような位置には、ルール上タイルを置くことができません。
 isAdjacentStone :: TilePos -> Board -> Bool
-isAdjacentStone pos (Board _ stones) = any check stones
-  where
-    check = (== pos) . fst 
+isAdjacentStone pos (Board _ stones) = any ((== pos) . fst) stones
 
 type TileMove = (TilePos, Tile)
 
