@@ -10,6 +10,9 @@ import Data.Array
 import Data.Either
 import Data.List
 import Data.Maybe
+import Data.Set (Set)
+import qualified Data.Set as Set
+import Data.Tuple
 import System.Random
 import ZiphilUtil
 import ZiphilUtil.Random
@@ -19,25 +22,26 @@ data Rotation = None | Clock | Inverse | Anticlock
   deriving (Eq, Enum, Show)
 
 data Edge = TopLeft | TopRight | RightTop | RightBottom | BottomRight | BottomLeft | LeftBottom | LeftTop
-  deriving (Eq, Enum, Show)
+  deriving (Eq, Ord, Enum, Show)
 
 rotateEdge :: Rotation -> Edge -> Edge
 rotateEdge None = id
 rotateEdge Clock = toEnum . flip mod 8 . (+ 2) . fromEnum
 rotateEdge rotation = rotateEdge (pred rotation) . rotateEdge Clock
 
-newtype Aisles = Aisles {aisleList :: [(Edge, Edge)]}
+newtype Aisles = Aisles {aisleSet :: Set (Edge, Edge)}
+  deriving (Eq, Show)
 
 rotateAisles :: Rotation -> Aisles -> Aisles
-rotateAisles = outAisles . map . bimapSame . rotateEdge
+rotateAisles = outAisles . Set.map . bimapSame . rotateEdge
   where
-    outAisles func (Aisles list) = Aisles (func list)
+    outAisles func (Aisles set) = Aisles (func set)
 
 -- 与えられた番号に対応する通路情報を返します。
 -- 番号は 0 以上 34 以下でなければならず、それ以外の値が渡された場合はエラーが発生します。
 getAisles :: Int -> Aisles
 getAisles n =
-  Aisles $ case n of
+  make $ case n of
     0 -> [(TopLeft, TopRight), (RightTop, RightBottom), (BottomRight, BottomLeft), (LeftBottom, LeftTop)]
     1 -> [(TopLeft, TopRight), (RightTop, RightBottom), (BottomRight, LeftBottom), (BottomLeft, LeftTop)]
     2 -> [(TopLeft, TopRight), (RightTop, RightBottom), (BottomRight, LeftTop), (BottomLeft, LeftBottom)]
@@ -74,12 +78,33 @@ getAisles n =
     33 -> [(TopLeft, BottomLeft), (TopRight, BottomRight), (RightTop, LeftTop), (RightBottom, LeftBottom)]
     34 -> [(TopLeft, LeftTop), (TopRight, RightTop), (RightBottom, BottomRight), (BottomLeft, LeftBottom)]
     _ -> error "invalid tile number"
+  where
+    make = Aisles . Set.fromList . concat . map (take 2 . iterate swap)
+
+data Symmetry = Asymmetric | Dyad | Tetrad
+  deriving (Eq, Show)
+
+symmetryOf :: Aisles -> Symmetry
+symmetryOf aisles = maybe Asymmetric snd $ find (check . fst) [(Clock, Tetrad), (Inverse, Dyad)]
+  where
+    check = (== aisles) . flip rotateAisles aisles
 
 data Tile = Tile {number :: Int, rotation :: Rotation}
   deriving (Eq, Show)
 
 aislesOf :: Tile -> Aisles
 aislesOf (Tile number rotation) = rotateAisles rotation (getAisles number)
+
+-- 通路の対称性によって回転が異なっていても見た目が同じになるタイルに対し、回転の情報を正規化したタイルを返します。
+-- 具体的には、以下のような動作をします。
+-- 90° 回転でもとに戻るタイルの場合、回転を全て None にします。
+-- 90° 回転ではもとに戻らず 180° 回転でもとに戻るタイルの場合、回転を None か Clock にします。
+normalize :: Tile -> Tile
+normalize tile@(Tile number rotation) = 
+  case symmetryOf $ aislesOf tile of
+    Asymmetric -> tile
+    Dyad -> Tile number $ toEnum $ flip mod 2 $ fromEnum rotation
+    Tetrad -> Tile number None
 
 type TilePos = (Int, Int)
 type StonePos = (TilePos, Edge)
@@ -141,7 +166,7 @@ switch (pos, edge) =
 -- 端から通路情報を辿ることで到達する反対側の端を返します。
 -- 通路情報が十分ない (8 ヶ所の端のうち別の端と繋がっていない端が存在する) 場合、エラーが発生します。
 opposite :: Edge -> Aisles -> Edge
-opposite edge (Aisles aisleList) = head $ mapMaybe choose aisleList
+opposite edge (Aisles aisleSet) = fromJust $ join $ find isJust $ Set.map choose aisleSet
   where
     choose (startEdge, endEdge)
       | startEdge == edge = Just endEdge
