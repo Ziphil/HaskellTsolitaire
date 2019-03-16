@@ -92,6 +92,12 @@ symmetryOf aisles = maybe Asymmetric snd $ find (check . fst) [(Clock, Tetrad), 
 data Tile = Tile {number :: Int, rotation :: Rotation}
   deriving (Eq, Show)
 
+tileSize :: Int
+tileSize = 35
+
+wholeTiles :: [Tile]
+wholeTiles = map (flip Tile None) [0 .. tileSize - 1]
+
 aislesOf :: Tile -> Aisles
 aislesOf (Tile number rotation) = rotateAisles rotation (getAisles number)
 
@@ -121,9 +127,6 @@ type TsuroMaybe = Either InvalidMove
 
 boardSize :: Int
 boardSize = 6
-
-tileSize :: Int
-tileSize = 35
 
 -- 指定した方向に隣接する位置を返します。
 -- 指定した方向が盤面外の場合は、OutOfBoard を返します。
@@ -208,6 +211,17 @@ isEmpty tilePos (Board (Tiles tileList) _) = isNothing (tileList ! tilePos)
 isAdjacentStone :: TilePos -> Board -> Bool
 isAdjacentStone pos (Board _ stones) = any ((== pos) . fst) stones
 
+-- 盤面に使われているタイルのリストを返します。
+usedTiles :: Board -> [Tile]
+usedTiles (Board (Tiles tileList) _) = catMaybes $ elems tileList
+
+-- 盤面に使われていないタイルのリストを返します。
+-- タイルの回転情報は全て None になります。
+remainingTiles :: Board -> [Tile]
+remainingTiles board = filter (flip notElem usedTileNumbers . number) wholeTiles
+  where
+    usedTileNumbers = map number $ usedTiles board
+
 type TileMove = (TilePos, Tile)
 
 -- タイルを指定された位置に置いた後の盤面を返します。
@@ -252,7 +266,7 @@ data Game = Game {board :: Board, hands :: [Tile]}
 
 -- 初期状態の残りタイルをシャッフルしない状態で返します。
 initialHands' :: [Tile]
-initialHands' = map (flip Tile None) [0 .. tileSize - 1]
+initialHands' = wholeTiles
 
 -- 初期状態の残りタイルを返します。
 initialHands :: RandomGen g => g -> [Tile]
