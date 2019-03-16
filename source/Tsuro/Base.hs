@@ -281,9 +281,9 @@ nextHand :: Game -> TsuroMaybe Tile
 nextHand (Game _ []) = Left NoNextHand
 nextHand (Game _ (hand : _)) = Right hand
 
-restHands :: Game -> TsuroMaybe [Tile]
-restHands (Game _ []) = Left NoNextHand
-restHands (Game _ (_ : rest)) = Right rest
+laterHands :: Game -> TsuroMaybe [Tile]
+laterHands (Game _ []) = Left NoNextHand
+laterHands (Game _ (_ : rest)) = Right rest
 
 rotateTile :: Rotation -> Tile -> Tile
 rotateTile rotation (Tile number _) = createTile number rotation
@@ -306,7 +306,7 @@ applyMove' (pos, rotation) (GameState board hand) = putTileAndUpdate (pos, rotat
 applyMove :: GameMove -> Game -> TsuroMaybe Game
 applyMove move game = makeGame =<< applyMove' move =<< gameStateOf game
   where
-    makeGame board = Game board <$> restHands game
+    makeGame board = Game board <$> laterHands game
 
 possibleMoves' :: GameState -> [GameMove]
 possibleMoves' (GameState board hand) = concatMap (liftA2 zip possiblePoss' repeat) rotations
