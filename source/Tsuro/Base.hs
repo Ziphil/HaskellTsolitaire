@@ -79,7 +79,7 @@ getAisles n =
     34 -> [(TopLeft, LeftTop), (TopRight, RightTop), (RightBottom, BottomRight), (BottomLeft, LeftBottom)]
     _ -> error "invalid tile number"
   where
-    make = Aisles . Set.fromList . concat . map (take 2 . iterate swap)
+    make = Aisles . Set.fromList . concatMap (take 2 . iterate swap)
 
 data Symmetry = Asymmetric | Dyad | Tetrad
   deriving (Eq, Show)
