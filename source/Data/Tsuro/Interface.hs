@@ -1,15 +1,15 @@
 --
 
 
-module Tsuro.Interface where
+module Data.Tsuro.Interface where
 
 import Data.List
+import Data.Tsuro
+import Data.Tsuro.Read
+import Data.Tsuro.Show
 import System.Console.Pretty
 import System.Random
-import Tsuro.Base
-import Tsuro.Read
-import Tsuro.Show
-import ZiphilUtil
+import Ziphil.Util.Core
 
 
 start :: IO ()

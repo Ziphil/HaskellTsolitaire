@@ -1,14 +1,14 @@
 {-# LANGUAGE FlexibleInstances #-}
 
 
-module Tsuro.Read where
+module Data.Tsuro.Read where
 
 import Control.Monad
 import Data.Ix
 import Data.Char
 import Data.List
-import Tsuro.Base
-import ZiphilUtil
+import Data.Tsuro
+import Ziphil.Util.Core
 
 
 class ReadRec a where

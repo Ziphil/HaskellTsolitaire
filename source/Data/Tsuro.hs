@@ -2,7 +2,7 @@
 {-# LANGUAGE TupleSections #-}
 
 
-module Tsuro.Base where
+module Data.Tsuro where
 
 import Control.Applicative
 import Control.Monad
@@ -14,8 +14,8 @@ import Data.Set (Set)
 import qualified Data.Set as Set
 import Data.Tuple
 import System.Random
-import ZiphilUtil
-import ZiphilUtil.Random
+import Ziphil.Util.Core
+import Ziphil.Util.Random
 
 
 data Rotation = None | Clock | Inverse | Anticlock

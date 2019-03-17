@@ -1,7 +1,7 @@
 --
 
 
-module ZiphilUtil where
+module Ziphil.Util.Core where
 
 import Control.Applicative
 import Control.Monad

@@ -6,8 +6,8 @@ module Main where
 import Control.Exception
 import Control.Monad
 import Data.List
+import Data.Tsuro
 import Test.Hspec
-import Tsuro.Base
 
 
 infixl 6 <@

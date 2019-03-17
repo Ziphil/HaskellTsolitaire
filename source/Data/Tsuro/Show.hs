@@ -2,13 +2,13 @@
 {-# LANGUAGE FlexibleInstances #-}
 
 
-module Tsuro.Show where
+module Data.Tsuro.Show where
 
 import Data.Array
 import Data.List
+import Data.Tsuro
 import System.Console.Pretty
-import Tsuro.Base
-import ZiphilUtil
+import Ziphil.Util.Core
 
 
 class ShowRec a where
