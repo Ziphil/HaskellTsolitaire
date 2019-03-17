@@ -336,8 +336,9 @@ possibleMoves game = fromRight [] $ possibleMoves' <$> gameStateOf game
 isCleared :: Game -> Bool
 isCleared (Game _ hands) = null hands
 
+isOver' :: GameState -> Bool
+isOver' (GameState board hand) = not $ canPutTileAnywhere hand board
+
 -- 次に置くべきタイルを置ける場所がなく、これ以上ゲームを進められない場合に、True を返します。
 isOver :: Game -> Bool
-isOver game@(Game board _) = either (const False) check $ nextHand game
-  where
-    check = not . flip canPutTileAnywhere board
+isOver game = fromRight False $ isOver' <$> gameStateOf game
