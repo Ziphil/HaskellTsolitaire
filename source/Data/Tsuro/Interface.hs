@@ -75,4 +75,4 @@ getNextGame game = do
     Left DetachedTilePos -> do
       putStrLn $ colorError "@ The specified position is not adjacent to any stone."
       getNextGame game
-    Right game -> return game
+    Right nextGame -> return nextGame
