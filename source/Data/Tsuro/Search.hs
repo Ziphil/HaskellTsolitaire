@@ -138,11 +138,17 @@ playoutB' board = playoutS' =<< makeBoard <$> state
     state = pick $ remainingTiles board
 
 playoutS :: MonadRandom m => GameState -> m Double
-playoutS state@(GameState board _) = ((/ max) . fromIntegral) <$> playoutS' state
+playoutS state@(GameState board _) = 
+  if null $ possibleMoves' state
+    then return 0
+    else ((/ max) . fromIntegral) <$> playoutS' state
   where
     max = fromIntegral $ length $ remainingTiles board
 
 playoutB :: MonadRandom m => Board -> m Double
-playoutB board = ((/ max) . fromIntegral) <$> playoutB' board
+playoutB board =
+  if null $ remainingTiles board
+    then return 1
+    else ((/ max) . fromIntegral) <$> playoutB' board
   where
     max = fromIntegral $ length $ remainingTiles board
