@@ -13,6 +13,7 @@ import Data.Ord
 import Data.Tsuro
 import System.Random
 import Ziphil.Util.Core
+import Ziphil.Util.Random
 
 
 maximumBy' :: (a -> a -> Ordering) -> [a] -> (Int, a)
@@ -121,9 +122,6 @@ makeChildrenB (board, _) = map makeNode $ remainingTiles board
 -- 報酬値は 0 以上 1 以下の数で、1 に近いほどプレイヤーにとって有利であったことを示します。
 playout :: MonadRandom m => Label -> m Double
 playout = either playoutS (playoutB . fst)
-
-pick :: MonadRandom m => [a] -> m a
-pick list = (list !!) <$> getRandomR (0, length list - 1)
 
 playoutS' :: MonadRandom m => GameState -> m Int
 playoutS' state = 

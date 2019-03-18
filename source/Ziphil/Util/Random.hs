@@ -14,3 +14,6 @@ getNubRandomRs (low, high) = take (high - low + 1) . nub <$> getRandomRs (low, h
 
 shuffle :: MonadRandom m => [a] -> m [a]
 shuffle list = map fst . sortOn snd . zip list <$> getNubRandomRs (1, length list)
+
+pick :: MonadRandom m => [a] -> m a
+pick list = (list !!) <$> getRandomR (0, length list - 1)
