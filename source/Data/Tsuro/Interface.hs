@@ -16,8 +16,8 @@ import Ziphil.Util.Core
 
 start :: IO ()
 start = do
-  gen <- getStdGen
-  loop $ initialGame gen
+  game <- initialGame
+  loop game
 
 colorInput :: Pretty a => a -> a
 colorInput = color Yellow

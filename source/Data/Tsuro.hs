@@ -6,6 +6,7 @@ module Data.Tsuro where
 
 import Control.Applicative
 import Control.Monad
+import Control.Monad.Random
 import Data.Array
 import Data.Either
 import Data.List
@@ -269,16 +270,16 @@ initialHands' :: [Tile]
 initialHands' = wholeTiles
 
 -- 初期状態の残りタイルを返します。
-initialHands :: RandomGen g => g -> [Tile]
-initialHands = flip shuffle initialHands'
+initialHands :: MonadRandom m => m [Tile]
+initialHands = shuffle initialHands'
 
 -- 初期状態のゲームをシャッフルしない状態で返します。
 initialGame' :: Game
 initialGame' = Game initialBoard initialHands'
 
 -- 初期状態のゲームを返します。
-initialGame :: RandomGen g => g -> Game
-initialGame = Game initialBoard . initialHands
+initialGame :: MonadRandom m => m Game
+initialGame = Game initialBoard <$> initialHands
 
 -- 与えられたタイル番号のリストの順番で手札が出てくるような初期状態のゲームを返します。
 -- タイル番号のリストは、0 以上 34 以下の整数が重複なく過不足なく出現している必要があります。
