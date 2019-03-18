@@ -61,14 +61,17 @@ correction parent child =
 score :: SearchTree -> SearchTree -> Double
 score parent child = ratio child + correction parent child
 
+initialSearchTree :: GameState -> SearchTree
+initialSearchTree state = Node (Left state) 0 0 (makeChildrenS state)
+
 search :: MonadRandom m => GameState -> m GameMove
 search state = snd . fromRight undefined . label . maximumBy (comparing num) . children <$> result
   where
     result = iterationList !! searchSize
-    iterationList = iterate ((fst <$>) . (montecarlo =<<)) (return $ initialSearchTree state)
+    iterationList = iterate (montecarlo' =<<) (return $ initialSearchTree state)
 
-initialSearchTree :: GameState -> SearchTree
-initialSearchTree state = Node (Left state) 0 0 (makeChildrenS state)
+montecarlo' :: MonadRandom m => SearchTree -> m SearchTree
+montecarlo' = (fst <$>) . montecarlo
 
 -- 指定されたノードからモンテカルロ木探索を 1 ステップ実行し、実行後のノードとプレイアウトの報酬値を返します。
 montecarlo :: MonadRandom m => SearchTree -> m (SearchTree, Double)
