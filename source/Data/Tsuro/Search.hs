@@ -83,9 +83,19 @@ montecarloPlayout (Node label num accum _) = (makeTree &&& id) <$> playout label
     makeTree reward = Node label (num + 1) (accum + reward) []
 
 montecarloExpand :: MonadRandom m => SearchTree -> m (SearchTree, Double) 
-montecarloExpand (Node label num accum _) = montecarloRecursion nextTree
+montecarloExpand node@(Node label num accum _) = 
+  if null children
+    then montecarloLeaf node
+    else montecarloRecursion nextTree
   where
-    nextTree = Node label num accum (makeChildren label)
+    nextTree = Node label num accum children
+    children = makeChildren label
+
+montecarloLeaf :: MonadRandom m => SearchTree -> m (SearchTree, Double)
+montecarloLeaf node@(Node label num accum _) = return (nextNode, reward)
+  where
+    nextNode = Node label (num + 1) (accum + reward) []
+    reward = either (const 0) (const 1) label
 
 makeChildren :: Label -> [SearchTree]
 makeChildren = either makeChildrenGS makeChildrenBI
