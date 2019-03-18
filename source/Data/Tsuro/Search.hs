@@ -37,6 +37,7 @@ data SearchTree = Node {label :: Label, num :: Int, accum :: Double, children ::
 thresholdNum :: Int
 thresholdNum = 2
 
+-- モンテカルロ木探索を実行するステップ数を返します。
 searchSize :: Int
 searchSize = 100
 
@@ -64,6 +65,7 @@ score parent child = ratio child + correction parent child
 initialSearchTree :: GameState -> SearchTree
 initialSearchTree state = Node (Left state) 0 0 (makeChildrenS state)
 
+-- モンテカルロ木探索を規定回数だけ実行して、最適な手を返します。
 search :: MonadRandom m => GameState -> m GameMove
 search state = snd . fromRight undefined . label . maximumBy (comparing ratio) . children <$> result
   where
