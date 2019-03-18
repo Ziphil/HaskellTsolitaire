@@ -54,7 +54,7 @@ correction :: SearchTree -> SearchTree -> Double
 correction parent child = 
   if num child == 0
     then 1 / 0
-    else (sqrt $ log $ fromIntegral $ num parent) / (fromIntegral $ num child) * expParam
+    else sqrt ((log $ fromIntegral $ num parent) / (fromIntegral $ num child)) * expParam
 
 score :: SearchTree -> SearchTree -> Double
 score parent child = ratio child + correction parent child
