@@ -35,8 +35,8 @@ data SearchTree = Node {label :: Label, num :: Int, accum :: Double, children ::
 thresholdNum :: Int
 thresholdNum = 500
 
-searchNum :: Int
-searchNum = 100000
+searchSize :: Int
+searchSize = 100000
 
 expParam :: Double
 expParam = 1.41
@@ -62,7 +62,7 @@ score parent child = ratio child + correction parent child
 search :: MonadRandom m => GameState -> m GameMove
 search state = snd . fromRight undefined . label . maximumBy (comparing num) . children <$> result
   where
-    result = iterationList !! searchNum
+    result = iterationList !! searchSize
     iterationList = iterate ((fst <$>) . (montecarlo =<<)) (return $ initialSearchTree state)
 
 initialSearchTree :: GameState -> SearchTree
@@ -98,16 +98,16 @@ montecarloLeaf node@(Node label num accum _) = return (nextNode, reward)
     reward = either (const 0) (const 1) label
 
 makeChildren :: Label -> [SearchTree]
-makeChildren = either makeChildrenGS makeChildrenBI
+makeChildren = either makeChildrenS makeChildrenB
 
-makeChildrenGS :: GameState -> [SearchTree]
-makeChildrenGS state@(GameState board hand) = map makeNode $ possibleMoves' state
+makeChildrenS :: GameState -> [SearchTree]
+makeChildrenS state@(GameState board hand) = map makeNode $ possibleMoves' state
   where
     makeNode move = Node (Right (makeBoard move, move)) 0 0 []
     makeBoard move = fromRight undefined $ applyMove' move state
 
-makeChildrenBI :: BoardInfo -> [SearchTree]
-makeChildrenBI (board, _) = map makeNode $ remainingTiles board
+makeChildrenB :: BoardInfo -> [SearchTree]
+makeChildrenB (board, _) = map makeNode $ remainingTiles board
   where
     makeNode tile = Node (Left (GameState board tile)) 0 0 []
 
@@ -120,25 +120,25 @@ montecarloRecursion node@(Node label num accum children) = (makeNode &&& snd) <$
 -- 指定された状態からプレイアウトを実行し、その結果となる報酬値を返します。
 -- 報酬値は 0 以上 1 以下の数で、1 に近いほどプレイヤーにとって有利であったことを示します。
 playout :: MonadRandom m => Label -> m Double
-playout = either playoutGS (playoutB . fst)
+playout = either playoutS (playoutB . fst)
 
 pick :: MonadRandom m => [a] -> m a
 pick list = (list !!) <$> getRandomR (0, length list - 1)
 
-playoutGS' :: MonadRandom m => GameState -> m Int
-playoutGS' state = (+ 1) <$> (playoutB' =<< makeNextBoard <$> move)
+playoutS' :: MonadRandom m => GameState -> m Int
+playoutS' state = (+ 1) <$> (playoutB' =<< makeNextBoard <$> move)
   where
     makeNextBoard move = fromRight undefined $ applyMove' move state
     move = pick $ possibleMoves' state
 
 playoutB' :: MonadRandom m => Board -> m Int
-playoutB' board = playoutGS' =<< makeBoard <$> state
+playoutB' board = playoutS' =<< makeBoard <$> state
   where
     makeBoard tile = GameState board tile
     state = pick $ remainingTiles board
 
-playoutGS :: MonadRandom m => GameState -> m Double
-playoutGS state@(GameState board _) = ((/ max) . fromIntegral) <$> playoutGS' state
+playoutS :: MonadRandom m => GameState -> m Double
+playoutS state@(GameState board _) = ((/ max) . fromIntegral) <$> playoutS' state
   where
     max = fromIntegral $ length $ remainingTiles board
 
