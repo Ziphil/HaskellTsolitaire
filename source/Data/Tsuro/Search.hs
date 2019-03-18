@@ -31,6 +31,7 @@ type BoardInfo = (Board, GameMove)
 type Label = Either GameState BoardInfo
 
 data SearchTree = Node {label :: Label, num :: Int, accum :: Double, children :: [SearchTree]}
+  deriving (Eq, Show)
 
 -- 葉ノードから子ノードを展開せずにプレイアウトする回数の閾値を返します。
 thresholdNum :: Int
