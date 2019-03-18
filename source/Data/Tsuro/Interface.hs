@@ -3,9 +3,11 @@
 
 module Data.Tsuro.Interface where
 
+import Data.Either
 import Data.List
 import Data.Tsuro
 import Data.Tsuro.Read
+import Data.Tsuro.Search
 import Data.Tsuro.Show
 import System.Console.Pretty
 import System.Random
@@ -52,11 +54,15 @@ inputGameMove :: Game -> IO GameMove
 inputGameMove game = do
   putStr $ showInputString game
   input <- getLine
-  if input == "?"
-    then do
+  case input of
+    ":p" -> do
       putStrLn $ colorMessage $ "@ Possible moves: " ++ unwords (map showRec $ possibleMoves game)
       inputGameMove game
-    else case readRec input of
+    ":s" -> do
+      move <- search $ fromRight undefined (gameStateOf game)
+      putStrLn $ colorMessage $ "@ Suggested move: " ++ showRec move
+      inputGameMove game
+    _ -> case readRec input of
       Nothing -> do
         putStrLn $ colorError "@ Invalid input. Specify the position and rotation in the form like '5FR' or '1BT'."
         inputGameMove game
