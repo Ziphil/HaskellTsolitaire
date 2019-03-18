@@ -99,11 +99,30 @@ montecarloRecursion node@(Node label num accum children) = (makeTree &&& snd) <$
 playout :: MonadRandom m => Label -> m Double
 playout = either playoutGS playoutB
 
+pick :: MonadRandom m => [a] -> m a
+pick list = (list !!) <$> getRandomR (0, length list - 1)
+
+playoutGS' :: MonadRandom m => GameState -> m Int
+playoutGS' state = (+ 1) <$> (playoutB' =<< makeNextBoard <$> move)
+  where
+    makeNextBoard move = fromRight undefined $ applyMove' move state
+    move = pick $ possibleMoves' state
+
+playoutB' :: MonadRandom m => Board -> m Int
+playoutB' board = playoutGS' =<< makeBoard <$> state
+  where
+    makeBoard tile = GameState board tile
+    state = pick $ remainingTiles board
+
 playoutGS :: MonadRandom m => GameState -> m Double
-playoutGS state = undefined
+playoutGS state@(GameState board _) = ((/ max) . fromIntegral) <$> playoutGS' state
+  where
+    max = fromIntegral $ length $ remainingTiles board
 
 playoutB :: MonadRandom m => Board -> m Double
-playoutB board = undefined
+playoutB board = ((/ max) . fromIntegral) <$> playoutB' board
+  where
+    max = fromIntegral $ length $ remainingTiles board
 
 search :: MonadRandom m => GameState -> m GameMove
 search state = undefined
