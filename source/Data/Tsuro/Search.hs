@@ -91,6 +91,12 @@ montecarloExpand node@(Node label num accum _) =
     nextNode = Node label num accum children
     children = makeChildren label
 
+montecarloRecursion :: MonadRandom m => SearchTree -> m (SearchTree, Double)
+montecarloRecursion node@(Node label num accum children) = (makeNode &&& snd) <$> montecarlo child
+  where
+    makeNode (tree, reward) = Node label (num + 1) (accum + reward) (children //^ (index, tree))
+    (index, child) = maximumBy' (comparing $ score node) children
+
 montecarloLeaf :: MonadRandom m => SearchTree -> m (SearchTree, Double)
 montecarloLeaf node@(Node label num accum _) = return (nextNode, reward)
   where
@@ -110,12 +116,6 @@ makeChildrenB :: BoardInfo -> [SearchTree]
 makeChildrenB (board, _) = map makeNode $ remainingTiles board
   where
     makeNode tile = Node (Left (GameState board tile)) 0 0 []
-
-montecarloRecursion :: MonadRandom m => SearchTree -> m (SearchTree, Double)
-montecarloRecursion node@(Node label num accum children) = (makeNode &&& snd) <$> montecarlo child
-  where
-    makeNode (tree, reward) = Node label (num + 1) (accum + reward) (children //^ (index, tree))
-    (index, child) = maximumBy' (comparing $ score node) children
 
 -- 指定された状態からプレイアウトを実行し、その結果となる報酬値を返します。
 -- 報酬値は 0 以上 1 以下の数で、1 に近いほどプレイヤーにとって有利であったことを示します。
