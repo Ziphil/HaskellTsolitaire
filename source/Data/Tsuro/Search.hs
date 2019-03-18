@@ -33,10 +33,10 @@ data SearchTree = Node {label :: Label, num :: Int, accum :: Double, children ::
 
 -- 葉ノードから子ノードを展開せずにプレイアウトする回数の閾値を返します。
 thresholdNum :: Int
-thresholdNum = 500
+thresholdNum = 5
 
 searchSize :: Int
-searchSize = 100000
+searchSize = 100
 
 expParam :: Double
 expParam = 1.41
