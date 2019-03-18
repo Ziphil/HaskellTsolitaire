@@ -15,6 +15,7 @@ dependencies:
   - hspec
   - pretty-terminal
   - random
+  - MonadRandom
 
 library:
   source-dirs: source

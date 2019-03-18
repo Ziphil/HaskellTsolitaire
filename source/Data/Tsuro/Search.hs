@@ -4,12 +4,15 @@
 module Data.Tsuro.Search where
 
 import Control.Applicative
+import Control.Arrow
+import Control.Monad.Random
 import Data.Either
 import Data.Function
 import Data.List
 import Data.Ord
 import Data.Tsuro
 import System.Random
+import Ziphil.Util.Core
 
 
 maximumBy' :: (a -> a -> Ordering) -> [a] -> (Int, a)
@@ -53,22 +56,21 @@ score :: SearchTree -> SearchTree -> Double
 score parent child = ratio child + correction parent child
 
 -- 指定されたノードからモンテカルロ木探索を 1 ステップ実行し、実行後のノードとプレイアウトの報酬値を返します。
-montecarlo :: RandomGen g => g -> SearchTree -> (SearchTree, Double)
-montecarlo gen node@(Node label num accum children) =
+montecarlo :: MonadRandom m => SearchTree -> m (SearchTree, Double)
+montecarlo node@(Node label num accum children) =
   if null children
     then if num < thresholdNum
-      then montecarloPlayout gen node
-      else montecarloExpand gen node
-    else montecarloRecursion gen node
+      then montecarloPlayout node
+      else montecarloExpand node
+    else montecarloRecursion node
 
-montecarloPlayout :: RandomGen g => g -> SearchTree -> (SearchTree, Double)
-montecarloPlayout gen (Node label num accum _) = (nextTree, reward)
+montecarloPlayout :: MonadRandom m => SearchTree -> m (SearchTree, Double)
+montecarloPlayout (Node label num accum _) = (makeTree &&& id) <$> playout label
   where
-    nextTree = Node label (num + 1) (accum + reward) []
-    reward = playout gen label
+    makeTree reward = Node label (num + 1) (accum + reward) []
 
-montecarloExpand :: RandomGen g => g -> SearchTree -> (SearchTree, Double) 
-montecarloExpand gen (Node label num accum _) = montecarloRecursion gen nextTree
+montecarloExpand :: MonadRandom m => SearchTree -> m (SearchTree, Double) 
+montecarloExpand (Node label num accum _) = montecarloRecursion nextTree
   where
     nextTree = Node label num accum (makeChildren label)
 
@@ -86,23 +88,22 @@ makeChildrenB board = map makeNode $ remainingTiles board
   where
     makeNode tile = Node (Left (GameState board tile)) 0 0 []
 
-montecarloRecursion :: RandomGen g => g -> SearchTree -> (SearchTree, Double)
-montecarloRecursion gen node@(Node label num accum children) = (nextTree, reward)
+montecarloRecursion :: MonadRandom m => SearchTree -> m (SearchTree, Double)
+montecarloRecursion node@(Node label num accum children) = (makeTree &&& snd) <$> montecarlo child
   where
-    nextTree = Node label (num + 1) (accum + reward) (children //^ (index, tree))
-    (tree, reward) = montecarlo gen child
+    makeTree (tree, reward) = Node label (num + 1) (accum + reward) (children //^ (index, tree))
     (index, child) = maximumBy' (comparing $ score node) children
 
 -- 指定された状態からプレイアウトを実行し、その結果となる報酬値を返します。
 -- 報酬値は 0 以上 1 以下の数で、1 に近いほどプレイヤーにとって有利であったことを示します。
-playout :: RandomGen g => g -> Label -> Double
-playout = liftA2 either playoutGS playoutB
+playout :: MonadRandom m => Label -> m Double
+playout = either playoutGS playoutB
 
-playoutGS :: RandomGen g => g -> GameState -> Double
-playoutGS gen state = undefined
+playoutGS :: MonadRandom m => GameState -> m Double
+playoutGS state = undefined
 
-playoutB :: RandomGen g => g -> Board -> Double
-playoutB gen board = undefined
+playoutB :: MonadRandom m => Board -> m Double
+playoutB board = undefined
 
-search :: RandomGen g => g -> GameState -> GameMove
+search :: MonadRandom m => GameState -> m GameMove
 search state = undefined
