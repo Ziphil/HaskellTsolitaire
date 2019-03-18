@@ -31,11 +31,26 @@ data SearchTree = Node {label :: Label, num :: Int, accum :: Double, children ::
 thresholdNum :: Int
 thresholdNum = 500
 
+expParam :: Double
+expParam = 1.41
+
+-- そのノードからの探索における報酬値の平均を返します。
 ratio :: SearchTree -> Double
-ratio (Node _ num accum _) = accum / fromIntegral num
+ratio (Node _ num accum _) = 
+  if num == 0
+    then 0
+    else accum / fromIntegral num
+
+-- 探索回数が少ないノードもある程度探索されるようにするための補正項を返します。
+-- ここでは、UCT (upper confidence bound applied to tree) に基づく値を返します。
+correction :: SearchTree -> SearchTree -> Double
+correction parent child = 
+  if num child == 0
+    then 1 / 0
+    else (sqrt $ log $ fromIntegral $ num parent) / (fromIntegral $ num child) * expParam
 
 score :: SearchTree -> SearchTree -> Double
-score node child = ratio child
+score parent child = ratio child + correction parent child
 
 -- 指定されたノードからモンテカルロ木探索を 1 ステップ実行し、実行後のノードとプレイアウトの報酬値を返します。
 montecarlo :: RandomGen g => g -> SearchTree -> (SearchTree, Double)
