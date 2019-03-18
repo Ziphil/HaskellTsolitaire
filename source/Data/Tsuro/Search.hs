@@ -66,7 +66,7 @@ search state = snd . fromRight undefined . label . maximumBy (comparing num) . c
     iterationList = iterate ((fst <$>) . (montecarlo =<<)) (return $ initialSearchTree state)
 
 initialSearchTree :: GameState -> SearchTree
-initialSearchTree state = Node (Left state) 0 0 []
+initialSearchTree state = Node (Left state) 0 0 (makeChildrenS state)
 
 -- 指定されたノードからモンテカルロ木探索を 1 ステップ実行し、実行後のノードとプレイアウトの報酬値を返します。
 montecarlo :: MonadRandom m => SearchTree -> m (SearchTree, Double)
