@@ -35,7 +35,7 @@ data SearchTree = Node {label :: Label, num :: Int, accum :: Double, children ::
 
 -- 葉ノードから子ノードを展開せずにプレイアウトする回数の閾値を返します。
 thresholdNum :: Int
-thresholdNum = 5
+thresholdNum = 3
 
 searchSize :: Int
 searchSize = 100
@@ -144,18 +144,21 @@ playoutB' board =
     tile = pick tiles
     tiles = remainingTiles board
 
+calcReward :: Int -> Int -> Double
+calcReward maxSize size = max 0 $ 1 - (fromIntegral maxSize - fromIntegral size) * 0.2
+
 playoutS :: MonadRandom m => GameState -> m Double
 playoutS state@(GameState board _) = 
-  if max == 0
+  if maxSize == 0
     then return 1
-    else ((/ max) . fromIntegral) <$> playoutS' state
+    else calcReward maxSize <$> playoutS' state
   where
-    max = fromIntegral $ length $ remainingTiles board
+    maxSize = length $ remainingTiles board
 
 playoutB :: MonadRandom m => Board -> m Double
 playoutB board =
-  if max == 0
+  if maxSize == 0
     then return 1
-    else ((/ max) . fromIntegral) <$> playoutB' board
+    else calcReward maxSize <$> playoutB' board
   where
-    max = fromIntegral $ length $ remainingTiles board
+    maxSize = length $ remainingTiles board
