@@ -304,6 +304,9 @@ rotateTile rotation (Tile number _) = createTile number rotation
 
 type GameMove = (TilePos, Rotation)
 
+tileMoveOf :: Tile -> GameMove -> TileMove
+tileMoveOf tile (pos, rotation) = (pos, rotateTile rotation tile)
+
 data GameState = GameState {board :: Board, hand :: Tile}
   deriving (Eq, Show)
 
@@ -313,7 +316,7 @@ gameStateOf :: Game -> TsuroMaybe GameState
 gameStateOf game@(Game board _) = GameState board <$> nextHand game
 
 applyMove' :: GameMove -> GameState -> TsuroMaybe Board
-applyMove' (pos, rotation) (GameState board hand) = putTileAndUpdate (pos, rotateTile rotation hand) board
+applyMove' move (GameState board hand) = putTileAndUpdate (tileMoveOf hand move) board
 
 -- 指定された位置に置くべきタイルを置きます。
 -- 不可能な操作をしようとした場合は、その原因を示すエラー値を返します。
