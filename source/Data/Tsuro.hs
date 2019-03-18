@@ -321,9 +321,9 @@ applyMove' move (GameState board hand) = putTileAndUpdate (tileMoveOf hand move)
 -- 指定された位置に置くべきタイルを置きます。
 -- 不可能な操作をしようとした場合は、その原因を示すエラー値を返します。
 applyMove :: GameMove -> Game -> TsuroMaybe Game
-applyMove move game = makeGame =<< applyMove' move =<< gameStateOf game
+applyMove move game = make =<< applyMove' move =<< gameStateOf game
   where
-    makeGame board = Game board <$> laterHands game
+    make board = Game board <$> laterHands game
 
 possibleMoves' :: GameState -> [GameMove]
 possibleMoves' (GameState board hand) = concatMap (liftA2 zip possiblePoss' repeat) rotations
