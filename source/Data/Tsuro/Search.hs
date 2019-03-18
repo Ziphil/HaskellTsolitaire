@@ -126,28 +126,36 @@ pick :: MonadRandom m => [a] -> m a
 pick list = (list !!) <$> getRandomR (0, length list - 1)
 
 playoutS' :: MonadRandom m => GameState -> m Int
-playoutS' state = (+ 1) <$> (playoutB' =<< makeNextBoard <$> move)
+playoutS' state = 
+  if null moves
+    then return 0
+    else (+ 1) <$> (playoutB' =<< makeNextBoard <$> move)
   where
     makeNextBoard move = fromRight undefined $ applyMove' move state
-    move = pick $ possibleMoves' state
+    move = pick moves
+    moves = possibleMoves' state
 
 playoutB' :: MonadRandom m => Board -> m Int
-playoutB' board = playoutS' =<< makeBoard <$> state
+playoutB' board = 
+  if null tiles
+    then return 0
+    else playoutS' =<< makeBoard <$> tile
   where
     makeBoard tile = GameState board tile
-    state = pick $ remainingTiles board
+    tile = pick tiles
+    tiles = remainingTiles board
 
 playoutS :: MonadRandom m => GameState -> m Double
 playoutS state@(GameState board _) = 
-  if null $ possibleMoves' state
-    then return 0
+  if max == 0
+    then return 1
     else ((/ max) . fromIntegral) <$> playoutS' state
   where
     max = fromIntegral $ length $ remainingTiles board
 
 playoutB :: MonadRandom m => Board -> m Double
 playoutB board =
-  if null $ remainingTiles board
+  if max == 0
     then return 1
     else ((/ max) . fromIntegral) <$> playoutB' board
   where
