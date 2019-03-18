@@ -35,7 +35,7 @@ data SearchTree = Node {label :: Label, num :: Int, accum :: Double, children ::
 
 -- 葉ノードから子ノードを展開せずにプレイアウトする回数の閾値を返します。
 thresholdNum :: Int
-thresholdNum = 3
+thresholdNum = 2
 
 searchSize :: Int
 searchSize = 100
@@ -65,7 +65,7 @@ initialSearchTree :: GameState -> SearchTree
 initialSearchTree state = Node (Left state) 0 0 (makeChildrenS state)
 
 search :: MonadRandom m => GameState -> m GameMove
-search state = snd . fromRight undefined . label . maximumBy (comparing num) . children <$> result
+search state = snd . fromRight undefined . label . maximumBy (comparing ratio) . children <$> result
   where
     result = iterationList !! searchSize
     iterationList = iterate (montecarlo' =<<) (return $ initialSearchTree state)
