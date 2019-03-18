@@ -78,17 +78,17 @@ montecarlo node@(Node label num accum children) =
     else montecarloRecursion node
 
 montecarloPlayout :: MonadRandom m => SearchTree -> m (SearchTree, Double)
-montecarloPlayout (Node label num accum _) = (makeTree &&& id) <$> playout label
+montecarloPlayout (Node label num accum _) = (makeNode &&& id) <$> playout label
   where
-    makeTree reward = Node label (num + 1) (accum + reward) []
+    makeNode reward = Node label (num + 1) (accum + reward) []
 
 montecarloExpand :: MonadRandom m => SearchTree -> m (SearchTree, Double) 
 montecarloExpand node@(Node label num accum _) = 
   if null children
     then montecarloLeaf node
-    else montecarloRecursion nextTree
+    else montecarloRecursion nextNode
   where
-    nextTree = Node label num accum children
+    nextNode = Node label num accum children
     children = makeChildren label
 
 montecarloLeaf :: MonadRandom m => SearchTree -> m (SearchTree, Double)
@@ -112,9 +112,9 @@ makeChildrenBI (board, _) = map makeNode $ remainingTiles board
     makeNode tile = Node (Left (GameState board tile)) 0 0 []
 
 montecarloRecursion :: MonadRandom m => SearchTree -> m (SearchTree, Double)
-montecarloRecursion node@(Node label num accum children) = (makeTree &&& snd) <$> montecarlo child
+montecarloRecursion node@(Node label num accum children) = (makeNode &&& snd) <$> montecarlo child
   where
-    makeTree (tree, reward) = Node label (num + 1) (accum + reward) (children //^ (index, tree))
+    makeNode (tree, reward) = Node label (num + 1) (accum + reward) (children //^ (index, tree))
     (index, child) = maximumBy' (comparing $ score node) children
 
 -- 指定された状態からプレイアウトを実行し、その結果となる報酬値を返します。
