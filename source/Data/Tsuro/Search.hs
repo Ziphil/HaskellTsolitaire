@@ -19,13 +19,12 @@ import Ziphil.Util.Random
 maximumBy' :: (a -> a -> Ordering) -> [a] -> (Int, a)
 maximumBy' comp = maximumBy (on comp snd) . zip [0 ..]
 
-infixl 9 //^
-(//^) :: [a] -> (Int, a) -> [a]
-[] //^ _ = []
-(x : xs) //^ (i, next) =
+update :: Int -> a -> [a] -> [a]
+update _ _ [] = []
+update i next (x : xs) =
   if i == 0
     then next : xs
-    else x : xs //^ (i - 1, next)
+    else x : update (i - 1) next xs
 
 type BoardInfo = (Board, GameMove)
 type Label = Either GameState BoardInfo
@@ -101,7 +100,7 @@ montecarloExpand node@(Node label num accum _) =
 montecarloRecursion :: MonadRandom m => SearchTree -> m (SearchTree, Double)
 montecarloRecursion node@(Node label num accum children) = (makeNode &&& snd) <$> montecarlo child
   where
-    makeNode (tree, reward) = Node label (num + 1) (accum + reward) (children //^ (index, tree))
+    makeNode (tree, reward) = Node label (num + 1) (accum + reward) (update index tree children)
     (index, child) = maximumBy' (comparing $ score node) children
 
 montecarloLeaf :: MonadRandom m => SearchTree -> m (SearchTree, Double)
