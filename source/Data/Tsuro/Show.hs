@@ -4,7 +4,7 @@
 
 module Data.Tsuro.Show where
 
-import Data.Array
+import Data.Array.IArray
 import Data.List
 import Data.Tsuro
 import System.Console.Pretty

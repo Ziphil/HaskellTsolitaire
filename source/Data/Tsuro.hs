@@ -7,7 +7,7 @@ module Data.Tsuro where
 import Control.Applicative
 import Control.Monad
 import Control.Monad.Random
-import Data.Array
+import Data.Array.IArray
 import Data.Either
 import Data.Function
 import Data.List
