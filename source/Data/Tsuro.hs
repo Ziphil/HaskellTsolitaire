@@ -31,7 +31,7 @@ rotateEdge None = id
 rotateEdge Clock = toEnum . flip mod 8 . (+ 2) . fromEnum
 rotateEdge rotation = rotateEdge (pred rotation) . rotateEdge Clock
 
-newtype Aisles = Aisles {aisleSet :: Set (Edge, Edge)}
+newtype Aisles = Aisles {rawAisles :: Set (Edge, Edge)}
   deriving (Eq, Show)
 
 rotateAisles :: Rotation -> Aisles -> Aisles
@@ -40,12 +40,12 @@ rotateAisles = outAisles . Set.map . bimapSame . rotateEdge
     outAisles func (Aisles set) = Aisles (func set)
 
 aisleArray :: Array (Int, Rotation) Aisles
-aisleArray = array ((0, None), (34, Anticlock)) $ map make $ comb rawList rotations
+aisleArray = array ((0, None), (34, Anticlock)) $ map make $ comb dataList rotations
   where
     make ((number, list), rotation) = ((number, rotation), rotateAisles rotation $ makeAisles list)
     makeAisles = Aisles . Set.fromList . concatMap (take 2 . iterate swap)
     rotations = enumFrom (toEnum 0)
-    rawList =
+    dataList =
       [ (0, [(TopLeft, TopRight), (RightTop, RightBottom), (BottomRight, BottomLeft), (LeftBottom, LeftTop)])
       , (1, [(TopLeft, TopRight), (RightTop, RightBottom), (BottomRight, LeftBottom), (BottomLeft, LeftTop)])
       , (2, [(TopLeft, TopRight), (RightTop, RightBottom), (BottomRight, LeftTop), (BottomLeft, LeftBottom)])
@@ -153,7 +153,7 @@ adjacent direction (x, y) =
   where
     make (pred, pos) = unless pred (Left OutOfBoard) >> Right pos
 
-newtype Tiles = Tiles {tileList :: Array TilePos (Maybe Tile)}
+newtype Tiles = Tiles {rawTiles :: Array TilePos (Maybe Tile)}
   deriving (Eq, Show)
 
 tilePosBounds :: (TilePos, TilePos)
@@ -187,7 +187,7 @@ switch (pos, edge) =
 oppositeArray :: Array ((Int, Rotation), Edge) Edge
 oppositeArray = array bounds $ map make $ comb (comb [0 .. tileSize - 1] rotations) edges
   where
-    make (pair, edge) = ((pair, edge), fromJust $ snd <$> find ((== edge) . fst) (aisleSet $ aisleArray ! pair))
+    make (pair, edge) = ((pair, edge), fromJust $ snd <$> find ((== edge) . fst) (rawAisles $ aisleArray ! pair))
     rotations = enumFrom (toEnum 0)
     edges = enumFrom (toEnum 0)
     bounds = (((0, None), TopLeft), ((tileSize - 1, Anticlock), LeftTop))
@@ -199,15 +199,15 @@ opposite (Tile number rotation) edge = oppositeArray ! ((number, rotation), edge
 
 -- 指定された位置のタイルを指定されたタイルで置き換え、その結果の盤面を返します。
 updateTile :: TilePos -> Tile -> Tiles -> Tiles
-updateTile pos tile (Tiles tileList) = Tiles $ tileList // [(pos, Just tile)]
+updateTile pos tile (Tiles tiles) = Tiles $ tiles // [(pos, Just tile)]
 
 -- 盤面に置かれているタイルの通路に沿って、与えられた駒位置から可能な限り進んだときに到達する駒位置を返します。
 -- 進む途中で盤面外に出てしまう場合は、OutOfBoard を返します。
 advanceStone :: Tiles -> StonePos -> TsuroMaybe StonePos
-advanceStone (Tiles tileList) (tilePos, edge) =
-  case tileList ! tilePos of
+advanceStone (Tiles tiles) (tilePos, edge) =
+  case tiles ! tilePos of
     Nothing -> Right (tilePos, edge)
-    Just tile -> advanceStone (Tiles tileList) =<< nextStonePos
+    Just tile -> advanceStone (Tiles tiles) =<< nextStonePos
       where
         nextStonePos = switch (tilePos, nextEdge)
         nextEdge = opposite tile edge
@@ -225,7 +225,7 @@ initialBoard = Board emptyTiles wholeTiles initialStones
 
 -- 指定された位置にタイルが置かれていないか確かめ、置かれていなければ True を返します。
 isEmpty :: TilePos -> Board -> Bool
-isEmpty tilePos (Board (Tiles tileList) _ _) = isNothing (tileList ! tilePos)
+isEmpty tilePos (Board (Tiles tiles) _ _) = isNothing (tiles ! tilePos)
 
 -- 指定された位置が何らかの駒と隣接しているかどうか確かめ、隣接していれば True を返します。
 -- この関数が False を返すような位置には、ルール上タイルを置くことができません。
@@ -234,7 +234,7 @@ isAdjacentStone pos (Board _ _ stones) = any ((== pos) . fst) stones
 
 -- 盤面に使われているタイルのリストを返します。
 usedTiles :: Board -> [Tile]
-usedTiles (Board (Tiles tileList) _ _) = catMaybes $ elems tileList
+usedTiles (Board (Tiles tiles) _ _) = catMaybes $ elems tiles
 
 type TileMove = (TilePos, Tile)
 
