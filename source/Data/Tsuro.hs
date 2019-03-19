@@ -24,7 +24,7 @@ data Rotation = None | Clock | Inverse | Anticlock
   deriving (Eq, Ord, Ix, Enum, Show)
 
 data Edge = TopLeft | TopRight | RightTop | RightBottom | BottomRight | BottomLeft | LeftBottom | LeftTop
-  deriving (Eq, Ord, Enum, Show)
+  deriving (Eq, Ord, Ix, Enum, Show)
 
 rotateEdge :: Rotation -> Edge -> Edge
 rotateEdge None = id
@@ -183,11 +183,19 @@ switch (pos, edge) =
     LeftTop -> (Anticlock, RightTop)
   where
     make (direction, edge) = (adjacent direction pos, edge)
+
+oppositeArray :: Array ((Int, Rotation), Edge) Edge
+oppositeArray = array bounds $ map make $ comb (comb [0 .. tileSize - 1] rotations) edges
+  where
+    make (pair, edge) = ((pair, edge), fromJust $ snd <$> find ((== edge) . fst) (aisleSet $ aisleArray ! pair))
+    rotations = enumFrom (toEnum 0)
+    edges = enumFrom (toEnum 0)
+    bounds = (((0, None), TopLeft), ((tileSize - 1, Anticlock), LeftTop))
     
 -- 端から通路情報を辿ることで到達する反対側の端を返します。
 -- 通路情報が十分ない (8 ヶ所の端のうち別の端と繋がっていない端が存在する) 場合、エラーが発生します。
-opposite :: Edge -> Aisles -> Edge
-opposite edge (Aisles aisleSet) = fromJust $ snd <$> find ((== edge) . fst) aisleSet
+opposite :: Tile -> Edge -> Edge
+opposite (Tile number rotation) edge = oppositeArray ! ((number, rotation), edge)
 
 -- 指定された位置のタイルを指定されたタイルで置き換え、その結果の盤面を返します。
 updateTile :: TilePos -> Tile -> Tiles -> Tiles
@@ -202,7 +210,7 @@ advanceStone (Tiles tileList) (tilePos, edge) =
     Just tile -> advanceStone (Tiles tileList) =<< nextStonePos
       where
         nextStonePos = switch (tilePos, nextEdge)
-        nextEdge = opposite edge (aislesOf tile)
+        nextEdge = opposite tile edge
 
 data Board = Board {tiles :: Tiles, remainingTiles :: [Tile], stones :: [StonePos]}
   deriving (Eq, Show)
