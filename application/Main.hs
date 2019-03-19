@@ -3,8 +3,17 @@
 
 module Main where
 
-import qualified Data.Tsuro.Interface as Tsuro
+import Data.Either
+import Data.Tsuro
+import Data.Tsuro.Interface
+import Data.Tsuro.Search
+import Data.Tsuro.Show
 
 
 main :: IO ()
-main = Tsuro.start
+main = start
+
+profile :: IO ()
+profile = move >> return ()
+  where
+    move = search =<< fromRight undefined . gameStateOf <$> initialGame
