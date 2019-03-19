@@ -43,7 +43,7 @@ rotateAisles = outAisles . Set.map . bimapSame . rotateEdge
 aisleMap :: Map (Int, Rotation) Aisles
 aisleMap = Map.fromList $ map make $ comb rawList rotations
   where
-    make ((n, list), rotation) = ((n, rotation), rotateAisles rotation $ makeAisles list)
+    make ((number, list), rotation) = ((number, rotation), rotateAisles rotation $ makeAisles list)
     makeAisles = Aisles . Set.fromList . concatMap (take 2 . iterate swap)
     rotations = enumFrom (toEnum 0)
     rawList =
@@ -87,10 +87,15 @@ aisleMap = Map.fromList $ map make $ comb rawList rotations
 data Symmetry = Asymmetric | Dyad | Tetrad
   deriving (Eq, Show)
 
-symmetryOf :: Aisles -> Symmetry
-symmetryOf aisles = maybe Asymmetric snd $ find (check . fst) [(Clock, Tetrad), (Inverse, Dyad)]
+calcSymmetry :: Aisles -> Symmetry
+calcSymmetry aisles = maybe Asymmetric snd $ find (check . fst) [(Clock, Tetrad), (Inverse, Dyad)]
   where
     check = (== aisles) . flip rotateAisles aisles
+
+symmetryMap :: Map Int Symmetry
+symmetryMap = Map.fromList $ map make [0 .. tileSize - 1]
+  where
+    make number = (number, calcSymmetry $ aisleMap Map.! (number, None))
 
 data Tile = Tile {number :: Int, rotation :: Rotation}
   deriving (Eq, Show)
@@ -104,13 +109,16 @@ wholeTiles = map (flip Tile None) [0 .. tileSize - 1]
 aislesOf :: Tile -> Aisles
 aislesOf (Tile number rotation) = aisleMap Map.! (number, rotation)
 
+symmetryOf :: Tile -> Symmetry
+symmetryOf (Tile number _) = symmetryMap Map.! number
+
 -- 通路の対称性によって回転が異なっていても見た目が同じになるタイルに対し、回転情報を正規化したタイルを返します。
 -- 具体的には、以下のような動作をします。
 -- 90° 回転でもとに戻るタイルの場合、回転を全て None にします。
 -- 90° 回転ではもとに戻らず 180° 回転でもとに戻るタイルの場合、回転を None か Clock にします。
 normalize :: Tile -> Tile
 normalize tile@(Tile number rotation) = 
-  case symmetryOf $ aislesOf tile of
+  case symmetryOf tile of
     Asymmetric -> tile
     Dyad -> Tile number $ toEnum $ flip mod 2 $ fromEnum rotation
     Tetrad -> Tile number None
