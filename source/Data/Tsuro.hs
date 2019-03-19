@@ -9,6 +9,7 @@ import Control.Monad
 import Control.Monad.Random
 import Data.Array
 import Data.Either
+import Data.Function
 import Data.List
 import Data.Map.Strict (Map) 
 import qualified Data.Map.Strict as Map
@@ -205,7 +206,7 @@ advanceStone (Tiles tileList) (tilePos, edge) =
         nextStonePos = switch (tilePos, nextEdge)
         nextEdge = opposite edge (aislesOf tile)
 
-data Board = Board {tiles :: Tiles, stones :: [StonePos]}
+data Board = Board {tiles :: Tiles, remainingTiles :: [Tile], stones :: [StonePos]}
   deriving (Eq, Show)
 
 -- 駒の初期位置を返します。
@@ -214,27 +215,20 @@ initialStones = [((1, 0), TopRight), ((4, 0), TopLeft), ((5, 1), RightBottom), (
 
 -- 初期状態の盤面を返します。
 initialBoard :: Board
-initialBoard = Board emptyTiles initialStones
+initialBoard = Board emptyTiles wholeTiles initialStones
 
 -- 指定された位置にタイルが置かれていないか確かめ、置かれていなければ True を返します。
 isEmpty :: TilePos -> Board -> Bool
-isEmpty tilePos (Board (Tiles tileList) _) = isNothing (tileList ! tilePos)
+isEmpty tilePos (Board (Tiles tileList) _ _) = isNothing (tileList ! tilePos)
 
 -- 指定された位置が何らかの駒と隣接しているかどうか確かめ、隣接していれば True を返します。
 -- この関数が False を返すような位置には、ルール上タイルを置くことができません。
 isAdjacentStone :: TilePos -> Board -> Bool
-isAdjacentStone pos (Board _ stones) = any ((== pos) . fst) stones
+isAdjacentStone pos (Board _ _ stones) = any ((== pos) . fst) stones
 
 -- 盤面に使われているタイルのリストを返します。
 usedTiles :: Board -> [Tile]
-usedTiles (Board (Tiles tileList) _) = catMaybes $ elems tileList
-
--- 盤面に使われていないタイルのリストを返します。
--- タイルの回転情報は全て None になります。
-remainingTiles :: Board -> [Tile]
-remainingTiles board = filter (flip notElem usedTileNumbers . number) wholeTiles
-  where
-    usedTileNumbers = map number $ usedTiles board
+usedTiles (Board (Tiles tileList) _ _) = catMaybes $ elems tileList
 
 type TileMove = (TilePos, Tile)
 
@@ -243,17 +237,18 @@ type TileMove = (TilePos, Tile)
 -- また、指定された位置が何らかの駒と隣接していない場合は、ルール上その位置にタイルを置くことはできないので、DetachedTilePos を返します。
 -- この関数単独では駒を動かしません。
 putTile :: TileMove -> Board -> TsuroMaybe Board
-putTile (pos, tile) board@(Board tiles stones) =
+putTile (pos, tile) board@(Board tiles remainingTiles stones) =
   unless isPosEmpty (Left TileAlreadyPut) >> unless isPosAdjacentStone (Left DetachedTilePos) >> Right nextBoard
     where
       isPosEmpty = isEmpty pos board
       isPosAdjacentStone = isAdjacentStone pos board
-      nextBoard = Board (updateTile pos tile tiles) stones
+      nextBoard = Board (updateTile pos tile tiles) nextRemainingTiles stones
+      nextRemainingTiles = deleteBy (on (==) number) tile remainingTiles
 
 -- 現在の盤面に従って全ての駒を移動させ、その結果の盤面を返します。
 -- 進む途中で盤面外に出てしまうような駒が 1 つでもある場合は、OutOfBoard を返します。
 advanceStones :: Board -> TsuroMaybe Board
-advanceStones (Board tiles stones) = Board tiles <$> mapM (advanceStone tiles) stones
+advanceStones (Board tiles remainingTiles stones) = Board tiles remainingTiles <$> mapM (advanceStone tiles) stones
 
 canAdvanceStones :: Board -> Bool
 canAdvanceStones = isRight . advanceStones
