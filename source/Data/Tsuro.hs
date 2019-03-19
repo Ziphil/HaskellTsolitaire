@@ -123,6 +123,14 @@ normalize tile@(Tile number rotation) =
     Dyad -> Tile number $ toEnum $ flip mod 2 $ fromEnum rotation
     Tetrad -> Tile number None
 
+-- タイルに書かれた通路の対称性を考慮に入れ、与えられたタイルを回転して得られる全てのタイルから成るリストを返します。
+rotatedTiles :: Tile -> [Tile]
+rotatedTiles tile@(Tile number _) = 
+  map (Tile number) $ case symmetryOf tile of
+    Asymmetric -> [None, Clock, Inverse, Anticlock]
+    Dyad -> [None, Clock]
+    Tetrad -> [None]
+
 type TilePos = (Int, Int)
 type StonePos = (TilePos, Edge)
 
@@ -332,12 +340,12 @@ applyMove move game = make =<< applyMove' move =<< gameStateOf game
     make board = Game board <$> laterHands game
 
 possibleMoves' :: GameState -> [GameMove]
-possibleMoves' (GameState board hand) = concatMap (liftA2 zip possiblePoss' repeat) rotations
-  where    
-    possiblePoss' rotation = possiblePoss (rotateTile rotation hand) board
-    rotations = enumFrom (toEnum 0)
+possibleMoves' (GameState board hand) = concatMap make $ rotatedTiles hand
+  where
+    make tile = zip (possiblePoss tile board) (repeat $ rotation tile)
 
 -- 可能な手のリストを返します。
+-- タイルに書かれた通路の対称性を考慮に入れるため、回転情報が違っていても見た目が同じになる手については、その片方のみがリストに含まれます。
 possibleMoves :: Game -> [GameMove]
 possibleMoves game = fromRight [] $ possibleMoves' <$> gameStateOf game
 
