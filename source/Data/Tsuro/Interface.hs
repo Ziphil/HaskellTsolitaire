@@ -10,6 +10,7 @@ import Data.Tsuro.Read
 import Data.Tsuro.Search
 import Data.Tsuro.Show
 import System.Console.Pretty
+import System.IO
 import System.Random
 import Ziphil.Util.Core
 
@@ -31,6 +32,12 @@ colorMessage = color Cyan
 colorError :: Pretty a => a -> a
 colorError = color Red
 
+flushStrLn :: String -> IO ()
+flushStrLn string = putStrLn string >> hFlush stdout
+
+flushStr :: String -> IO ()
+flushStr string = putStr string >> hFlush stdout
+
 showInputString :: Game -> String
 showInputString game = either (const "") show' (number <$> nextHand game)
   where
@@ -38,33 +45,33 @@ showInputString game = either (const "") show' (number <$> nextHand game)
 
 loop :: Game -> IO ()
 loop game = do
-  putStrLn $ showRec game
+  flushStrLn $ showRec game
   case (isCleared game, isOver game) of
-    (True, _) -> putStrLn $ colorMessage "@ Congratulations! You win the game."
+    (True, _) -> flushStrLn $ colorMessage "@ Congratulations! You win the game."
     (False, True) -> do
-      putStr $ showInputString game
-      putStrLn "---"
-      putStrLn $ colorMessage "@ Game over! Try again!"
+      flushStr $ showInputString game
+      flushStrLn "---"
+      flushStrLn $ colorMessage "@ Game over! Try again!"
     (False, False) -> do
       nextGame <- getNextGame game
-      putStrLn ""
+      flushStrLn ""
       loop nextGame
 
 inputGameMove :: Game -> IO GameMove
 inputGameMove game = do
-  putStr $ showInputString game
+  flushStr $ showInputString game
   input <- getLine
   case input of
     ":p" -> do
-      putStrLn $ colorMessage $ "@ Possible moves: " ++ unwords (map showRec $ possibleMoves game)
+      flushStrLn $ colorMessage $ "@ Possible moves: " ++ unwords (map showRec $ possibleMoves game)
       inputGameMove game
     ":s" -> do
       move <- search $ fromRight undefined (gameStateOf game)
-      putStrLn $ colorMessage $ "@ Suggested move: " ++ showRec move
+      flushStrLn $ colorMessage $ "@ Suggested move: " ++ showRec move
       inputGameMove game
     _ -> case readRec input of
       Nothing -> do
-        putStrLn $ colorError "@ Invalid input. Specify the position and rotation in the form like '5FR' or '1BT'."
+        flushStrLn $ colorError "@ Invalid input. Specify the position and rotation in the form like '5FR' or '1BT'."
         inputGameMove game
       Just move -> return move
 
@@ -73,12 +80,12 @@ getNextGame game = do
   move <- inputGameMove game
   case applyMove move game of
     Left OutOfBoard -> do
-      putStrLn $ colorError "@ Some stone will go out of the board."
+      flushStrLn $ colorError "@ Some stone will go out of the board."
       getNextGame game
     Left TileAlreadyPut -> do
-      putStrLn $ colorError "@ Some tile is already put there."
+      flushStrLn $ colorError "@ Some tile is already put there."
       getNextGame game
     Left DetachedTilePos -> do
-      putStrLn $ colorError "@ The specified position is not adjacent to any stone."
+      flushStrLn $ colorError "@ The specified position is not adjacent to any stone."
       getNextGame game
     Right nextGame -> return nextGame
