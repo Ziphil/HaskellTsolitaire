@@ -84,11 +84,6 @@ aisleMap = Map.fromList $ map make $ comb rawList rotations
       , (34, [(TopLeft, LeftTop), (TopRight, RightTop), (RightBottom, BottomRight), (BottomLeft, LeftBottom)])
       ]
 
--- 与えられた番号に対応する通路情報を返します。
--- 番号は 0 以上 34 以下でなければならず、それ以外の値が渡された場合はエラーが発生します。
-getAisles :: Int -> Aisles
-getAisles n = aisleMap Map.! (n, None)
-
 data Symmetry = Asymmetric | Dyad | Tetrad
   deriving (Eq, Show)
 
