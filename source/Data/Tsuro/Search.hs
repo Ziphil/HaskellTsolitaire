@@ -7,7 +7,6 @@ import Control.Applicative
 import Control.Arrow
 import Control.Monad.Random
 import Data.Either
-import Data.Function
 import Data.List
 import Data.Ord
 import Data.Tsuro
@@ -15,16 +14,6 @@ import System.Random
 import Ziphil.Util.Core
 import Ziphil.Util.Random
 
-
-maximumBy' :: (a -> a -> Ordering) -> [a] -> (Int, a)
-maximumBy' comp = maximumBy (on comp snd) . zip [0 ..]
-
-update :: Int -> a -> [a] -> [a]
-update _ _ [] = []
-update i next (x : xs) =
-  if i == 0
-    then next : xs
-    else x : update (i - 1) next xs
 
 type BoardInfo = (Board, GameMove)
 type Label = Either GameState BoardInfo
