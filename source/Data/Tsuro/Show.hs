@@ -31,7 +31,9 @@ instance ShowRec Edge where
   showRec LeftTop = "lt"
 
 instance ShowRec Tile where
-  showRec (Tile number rotation) = show number ++ showRec rotation
+  showRec tile = show number ++ showRec rotation
+    where
+      Tile number rotation = normalize tile
 
 instance ShowRec TilePos where
   showRec (x, y) = show (y + 1) ++ ["ABCDEF" !! x]

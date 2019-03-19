@@ -10,6 +10,8 @@ import Control.Monad.Random
 import Data.Array
 import Data.Either
 import Data.List
+import Data.Map.Strict (Map) 
+import qualified Data.Map.Strict as Map
 import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as Set
@@ -20,7 +22,7 @@ import Ziphil.Util.Random
 
 
 data Rotation = None | Clock | Inverse | Anticlock
-  deriving (Eq, Enum, Show)
+  deriving (Eq, Ord, Enum, Show)
 
 data Edge = TopLeft | TopRight | RightTop | RightBottom | BottomRight | BottomLeft | LeftBottom | LeftTop
   deriving (Eq, Ord, Enum, Show)
@@ -38,49 +40,54 @@ rotateAisles = outAisles . Set.map . bimapSame . rotateEdge
   where
     outAisles func (Aisles set) = Aisles (func set)
 
+aisleMap :: Map (Int, Rotation) Aisles
+aisleMap = Map.fromList $ map make $ comb rawList rotations
+  where
+    make ((n, list), rotation) = ((n, rotation), rotateAisles rotation $ makeAisles list)
+    makeAisles = Aisles . Set.fromList . concatMap (take 2 . iterate swap)
+    rotations = enumFrom (toEnum 0)
+    rawList =
+      [ (0, [(TopLeft, TopRight), (RightTop, RightBottom), (BottomRight, BottomLeft), (LeftBottom, LeftTop)])
+      , (1, [(TopLeft, TopRight), (RightTop, RightBottom), (BottomRight, LeftBottom), (BottomLeft, LeftTop)])
+      , (2, [(TopLeft, TopRight), (RightTop, RightBottom), (BottomRight, LeftTop), (BottomLeft, LeftBottom)])
+      , (3, [(TopLeft, TopRight), (RightTop, BottomRight), (RightBottom, LeftBottom), (BottomLeft, LeftTop)])
+      , (4, [(TopLeft, TopRight), (RightTop, BottomRight), (RightBottom, LeftTop), (BottomLeft, LeftBottom)])
+      , (5, [(TopLeft, TopRight), (RightTop, BottomLeft), (RightBottom, LeftBottom), (BottomRight, LeftTop)])
+      , (6, [(TopLeft, TopRight), (RightTop, BottomLeft), (RightBottom, LeftTop), (BottomRight, LeftBottom)])
+      , (7, [(TopLeft, TopRight), (RightTop, LeftBottom), (RightBottom, BottomRight), (BottomLeft, LeftTop)])
+      , (8, [(TopLeft, TopRight), (RightTop, LeftBottom), (RightBottom, BottomLeft), (BottomRight, LeftTop)])
+      , (9, [(TopLeft, TopRight), (RightTop, LeftBottom), (RightBottom, LeftTop), (BottomRight, BottomLeft)])
+      , (10, [(TopLeft, TopRight), (RightTop, LeftTop), (RightBottom, BottomRight), (BottomLeft, LeftBottom)])
+      , (11, [(TopLeft, TopRight), (RightTop, LeftTop), (RightBottom, BottomLeft), (BottomRight, LeftBottom)])
+      , (12, [(TopLeft, TopRight), (RightTop, LeftTop), (RightBottom, LeftBottom), (BottomRight, BottomLeft)])
+      , (13, [(TopLeft, RightTop), (TopRight, RightBottom), (BottomRight, LeftBottom), (BottomLeft, LeftTop)])
+      , (14, [(TopLeft, RightTop), (TopRight, RightBottom), (BottomRight, LeftTop), (BottomLeft, LeftBottom)])
+      , (15, [(TopLeft, RightTop), (TopRight, BottomRight), (RightBottom, LeftBottom), (BottomLeft, LeftTop)])
+      , (16, [(TopLeft, RightTop), (TopRight, BottomRight), (RightBottom, LeftTop), (BottomLeft, LeftBottom)])
+      , (17, [(TopLeft, RightTop), (TopRight, BottomLeft), (RightBottom, LeftBottom), (BottomRight, LeftTop)])
+      , (18, [(TopLeft, RightTop), (TopRight, BottomLeft), (RightBottom, LeftTop), (BottomRight, LeftBottom)])
+      , (19, [(TopLeft, RightTop), (TopRight, LeftBottom), (RightBottom, BottomRight), (BottomLeft, LeftTop)])
+      , (20, [(TopLeft, RightTop), (TopRight, LeftBottom), (RightBottom, BottomLeft), (BottomRight, LeftTop)])
+      , (21, [(TopLeft, RightTop), (TopRight, LeftTop), (RightBottom, BottomRight), (BottomLeft, LeftBottom)])
+      , (22, [(TopLeft, RightTop), (TopRight, LeftTop), (RightBottom, BottomLeft), (BottomRight, LeftBottom)])
+      , (23, [(TopLeft, RightBottom), (TopRight, RightTop), (BottomRight, LeftTop), (BottomLeft, LeftBottom)])
+      , (24, [(TopLeft, RightBottom), (TopRight, BottomRight), (RightTop, LeftBottom), (BottomLeft, LeftTop)])
+      , (25, [(TopLeft, RightBottom), (TopRight, BottomRight), (RightTop, LeftTop), (BottomLeft, LeftBottom)])
+      , (26, [(TopLeft, RightBottom), (TopRight, BottomLeft), (RightTop, LeftBottom), (BottomRight, LeftTop)])
+      , (27, [(TopLeft, RightBottom), (TopRight, LeftBottom), (RightTop, BottomLeft), (BottomRight, LeftTop)])
+      , (28, [(TopLeft, BottomRight), (TopRight, RightTop), (RightBottom, LeftBottom), (BottomLeft, LeftTop)])
+      , (29, [(TopLeft, BottomRight), (TopRight, RightTop), (RightBottom, LeftTop), (BottomLeft, LeftBottom)])
+      , (30, [(TopLeft, BottomRight), (TopRight, RightBottom), (RightTop, LeftBottom), (BottomLeft, LeftTop)])
+      , (31, [(TopLeft, BottomRight), (TopRight, BottomLeft), (RightTop, LeftBottom), (RightBottom, LeftTop)])
+      , (32, [(TopLeft, BottomRight), (TopRight, BottomLeft), (RightTop, LeftTop), (RightBottom, LeftBottom)])
+      , (33, [(TopLeft, BottomLeft), (TopRight, BottomRight), (RightTop, LeftTop), (RightBottom, LeftBottom)])
+      , (34, [(TopLeft, LeftTop), (TopRight, RightTop), (RightBottom, BottomRight), (BottomLeft, LeftBottom)])
+      ]
+
 -- 与えられた番号に対応する通路情報を返します。
 -- 番号は 0 以上 34 以下でなければならず、それ以外の値が渡された場合はエラーが発生します。
 getAisles :: Int -> Aisles
-getAisles n =
-  make $ case n of
-    0 -> [(TopLeft, TopRight), (RightTop, RightBottom), (BottomRight, BottomLeft), (LeftBottom, LeftTop)]
-    1 -> [(TopLeft, TopRight), (RightTop, RightBottom), (BottomRight, LeftBottom), (BottomLeft, LeftTop)]
-    2 -> [(TopLeft, TopRight), (RightTop, RightBottom), (BottomRight, LeftTop), (BottomLeft, LeftBottom)]
-    3 -> [(TopLeft, TopRight), (RightTop, BottomRight), (RightBottom, LeftBottom), (BottomLeft, LeftTop)]
-    4 -> [(TopLeft, TopRight), (RightTop, BottomRight), (RightBottom, LeftTop), (BottomLeft, LeftBottom)]
-    5 -> [(TopLeft, TopRight), (RightTop, BottomLeft), (RightBottom, LeftBottom), (BottomRight, LeftTop)]
-    6 -> [(TopLeft, TopRight), (RightTop, BottomLeft), (RightBottom, LeftTop), (BottomRight, LeftBottom)]
-    7 -> [(TopLeft, TopRight), (RightTop, LeftBottom), (RightBottom, BottomRight), (BottomLeft, LeftTop)]
-    8 -> [(TopLeft, TopRight), (RightTop, LeftBottom), (RightBottom, BottomLeft), (BottomRight, LeftTop)]
-    9 -> [(TopLeft, TopRight), (RightTop, LeftBottom), (RightBottom, LeftTop), (BottomRight, BottomLeft)]
-    10 -> [(TopLeft, TopRight), (RightTop, LeftTop), (RightBottom, BottomRight), (BottomLeft, LeftBottom)]
-    11 -> [(TopLeft, TopRight), (RightTop, LeftTop), (RightBottom, BottomLeft), (BottomRight, LeftBottom)]
-    12 -> [(TopLeft, TopRight), (RightTop, LeftTop), (RightBottom, LeftBottom), (BottomRight, BottomLeft)]
-    13 -> [(TopLeft, RightTop), (TopRight, RightBottom), (BottomRight, LeftBottom), (BottomLeft, LeftTop)]
-    14 -> [(TopLeft, RightTop), (TopRight, RightBottom), (BottomRight, LeftTop), (BottomLeft, LeftBottom)]
-    15 -> [(TopLeft, RightTop), (TopRight, BottomRight), (RightBottom, LeftBottom), (BottomLeft, LeftTop)]
-    16 -> [(TopLeft, RightTop), (TopRight, BottomRight), (RightBottom, LeftTop), (BottomLeft, LeftBottom)]
-    17 -> [(TopLeft, RightTop), (TopRight, BottomLeft), (RightBottom, LeftBottom), (BottomRight, LeftTop)]
-    18 -> [(TopLeft, RightTop), (TopRight, BottomLeft), (RightBottom, LeftTop), (BottomRight, LeftBottom)]
-    19 -> [(TopLeft, RightTop), (TopRight, LeftBottom), (RightBottom, BottomRight), (BottomLeft, LeftTop)]
-    20 -> [(TopLeft, RightTop), (TopRight, LeftBottom), (RightBottom, BottomLeft), (BottomRight, LeftTop)]
-    21 -> [(TopLeft, RightTop), (TopRight, LeftTop), (RightBottom, BottomRight), (BottomLeft, LeftBottom)]
-    22 -> [(TopLeft, RightTop), (TopRight, LeftTop), (RightBottom, BottomLeft), (BottomRight, LeftBottom)]
-    23 -> [(TopLeft, RightBottom), (TopRight, RightTop), (BottomRight, LeftTop), (BottomLeft, LeftBottom)]
-    24 -> [(TopLeft, RightBottom), (TopRight, BottomRight), (RightTop, LeftBottom), (BottomLeft, LeftTop)]
-    25 -> [(TopLeft, RightBottom), (TopRight, BottomRight), (RightTop, LeftTop), (BottomLeft, LeftBottom)]
-    26 -> [(TopLeft, RightBottom), (TopRight, BottomLeft), (RightTop, LeftBottom), (BottomRight, LeftTop)]
-    27 -> [(TopLeft, RightBottom), (TopRight, LeftBottom), (RightTop, BottomLeft), (BottomRight, LeftTop)]
-    28 -> [(TopLeft, BottomRight), (TopRight, RightTop), (RightBottom, LeftBottom), (BottomLeft, LeftTop)]
-    29 -> [(TopLeft, BottomRight), (TopRight, RightTop), (RightBottom, LeftTop), (BottomLeft, LeftBottom)]
-    30 -> [(TopLeft, BottomRight), (TopRight, RightBottom), (RightTop, LeftBottom), (BottomLeft, LeftTop)]
-    31 -> [(TopLeft, BottomRight), (TopRight, BottomLeft), (RightTop, LeftBottom), (RightBottom, LeftTop)]
-    32 -> [(TopLeft, BottomRight), (TopRight, BottomLeft), (RightTop, LeftTop), (RightBottom, LeftBottom)]
-    33 -> [(TopLeft, BottomLeft), (TopRight, BottomRight), (RightTop, LeftTop), (RightBottom, LeftBottom)]
-    34 -> [(TopLeft, LeftTop), (TopRight, RightTop), (RightBottom, BottomRight), (BottomLeft, LeftBottom)]
-    _ -> error "invalid tile number"
-  where
-    make = Aisles . Set.fromList . concatMap (take 2 . iterate swap)
+getAisles n = aisleMap Map.! (n, None)
 
 data Symmetry = Asymmetric | Dyad | Tetrad
   deriving (Eq, Show)
@@ -100,7 +107,7 @@ wholeTiles :: [Tile]
 wholeTiles = map (flip Tile None) [0 .. tileSize - 1]
 
 aislesOf :: Tile -> Aisles
-aislesOf (Tile number rotation) = rotateAisles rotation (getAisles number)
+aislesOf (Tile number rotation) = aisleMap Map.! (number, rotation)
 
 -- 通路の対称性によって回転が異なっていても見た目が同じになるタイルに対し、回転情報を正規化したタイルを返します。
 -- 具体的には、以下のような動作をします。
@@ -112,11 +119,6 @@ normalize tile@(Tile number rotation) =
     Asymmetric -> tile
     Dyad -> Tile number $ toEnum $ flip mod 2 $ fromEnum rotation
     Tetrad -> Tile number None
-
--- 番号と回転情報から、回転情報を正規化した状態のタイルを生成します。
--- この関数でタイルを生成している限りでは、タイルとその見た目は 1 対 1 に対応します。
-createTile :: Int -> Rotation -> Tile
-createTile = normalize .^ Tile
 
 type TilePos = (Int, Int)
 type StonePos = (TilePos, Edge)
@@ -301,7 +303,7 @@ laterHands (Game _ []) = Left NoNextHand
 laterHands (Game _ (_ : rest)) = Right rest
 
 rotateTile :: Rotation -> Tile -> Tile
-rotateTile rotation (Tile number _) = createTile number rotation
+rotateTile rotation (Tile number _) = Tile number rotation
 
 type GameMove = (TilePos, Rotation)
 
