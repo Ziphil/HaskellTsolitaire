@@ -1,6 +1,7 @@
 .stack-work
 .vscode
 *~
+*.prof
 tsuro.cabal
 desktop.ini
 Thumbs.db
