@@ -26,8 +26,8 @@ thresholdNum :: Int
 thresholdNum = 2
 
 -- モンテカルロ木探索を実行するステップ数を返します。
-searchSize :: Int
-searchSize = 100
+iterateSize :: Int
+iterateSize = 100
 
 expParam :: Double
 expParam = 1.41
@@ -55,10 +55,14 @@ initialSearchTree state = Node (Left state) 0 0 (makeChildrenS state)
 
 -- モンテカルロ木探索を規定回数だけ実行して、最適な手を返します。
 search :: MonadRandom m => GameState -> m GameMove
-search state = snd . fromRight undefined . label . maximumBy (comparing ratio) . children <$> result
+search state = make <$> iterateMontecarlo (initialSearchTree state)
   where
-    result = iterationList !! searchSize
-    iterationList = iterate (montecarlo' =<<) (return $ initialSearchTree state)
+    make = snd . fromRight undefined . label . maximumBy (comparing ratio) . children
+
+iterateMontecarlo :: MonadRandom m => SearchTree -> m SearchTree
+iterateMontecarlo node = iterationList !! iterateSize
+  where
+    iterationList = iterate (montecarlo' =<<) $ return node
 
 montecarlo' :: MonadRandom m => SearchTree -> m SearchTree
 montecarlo' = (fst <$>) . montecarlo
