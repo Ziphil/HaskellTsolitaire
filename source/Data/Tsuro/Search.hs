@@ -23,14 +23,14 @@ data SearchTree = Node {label :: Label, num :: Int, accum :: Double, children ::
 
 -- 葉ノードから子ノードを展開せずにプレイアウトする回数の閾値を返します。
 thresholdNum :: Int
-thresholdNum = 2
+thresholdNum = 5
 
 -- モンテカルロ木探索を実行するステップ数を返します。
 iterateSize :: Int
-iterateSize = 100
+iterateSize = 10000
 
 expParam :: Double
-expParam = 1.41
+expParam = 0.7
 
 -- そのノードからの探索における報酬値の平均を返します。
 ratio :: SearchTree -> Double
@@ -142,7 +142,10 @@ playoutB' board =
     tiles = remainingTiles board
 
 calcReward :: Int -> Int -> Double
-calcReward maxSize size = max 0 $ 1 - (fromIntegral maxSize - fromIntegral size) * 0.2
+calcReward maxSize size = 
+  if size == maxSize
+    then 1
+    else max 0 $ 0.4 - (fromIntegral maxSize - fromIntegral size) * 0.1
 
 playoutS :: MonadRandom m => GameState -> m Double
 playoutS state@(GameState board _) = 
