@@ -11,8 +11,6 @@ import Data.Array
 import Data.Either
 import Data.Function
 import Data.List
-import Data.Map.Strict (Map) 
-import qualified Data.Map.Strict as Map
 import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as Set
@@ -23,7 +21,7 @@ import Ziphil.Util.Random
 
 
 data Rotation = None | Clock | Inverse | Anticlock
-  deriving (Eq, Ord, Enum, Show)
+  deriving (Eq, Ord, Ix, Enum, Show)
 
 data Edge = TopLeft | TopRight | RightTop | RightBottom | BottomRight | BottomLeft | LeftBottom | LeftTop
   deriving (Eq, Ord, Enum, Show)
@@ -41,8 +39,8 @@ rotateAisles = outAisles . Set.map . bimapSame . rotateEdge
   where
     outAisles func (Aisles set) = Aisles (func set)
 
-aisleMap :: Map (Int, Rotation) Aisles
-aisleMap = Map.fromList $ map make $ comb rawList rotations
+aisleArray :: Array (Int, Rotation) Aisles
+aisleArray = array ((0, None), (34, Anticlock)) $ map make $ comb rawList rotations
   where
     make ((number, list), rotation) = ((number, rotation), rotateAisles rotation $ makeAisles list)
     makeAisles = Aisles . Set.fromList . concatMap (take 2 . iterate swap)
@@ -93,10 +91,10 @@ calcSymmetry aisles = maybe Asymmetric snd $ find (check . fst) [(Clock, Tetrad)
   where
     check = (== aisles) . flip rotateAisles aisles
 
-symmetryMap :: Map Int Symmetry
-symmetryMap = Map.fromList $ map make [0 .. tileSize - 1]
+symmetryArray :: Array Int Symmetry
+symmetryArray = array (0, tileSize - 1) $ map make [0 .. tileSize - 1]
   where
-    make number = (number, calcSymmetry $ aisleMap Map.! (number, None))
+    make number = (number, calcSymmetry $ aisleArray ! (number, None))
 
 data Tile = Tile {number :: Int, rotation :: Rotation}
   deriving (Eq, Show)
@@ -108,10 +106,10 @@ wholeTiles :: [Tile]
 wholeTiles = map (flip Tile None) [0 .. tileSize - 1]
 
 aislesOf :: Tile -> Aisles
-aislesOf (Tile number rotation) = aisleMap Map.! (number, rotation)
+aislesOf (Tile number rotation) = aisleArray ! (number, rotation)
 
 symmetryOf :: Tile -> Symmetry
-symmetryOf (Tile number _) = symmetryMap Map.! number
+symmetryOf (Tile number _) = symmetryArray ! number
 
 -- 通路の対称性によって回転が異なっていても見た目が同じになるタイルに対し、回転情報を正規化したタイルを返します。
 -- 具体的には、以下のような動作をします。
