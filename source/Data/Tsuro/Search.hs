@@ -15,8 +15,8 @@ import Ziphil.Util.List
 import Ziphil.Util.Random
 
 
-type BoardInfo = (Board, GameMove)
-type Label = Either GameState BoardInfo
+type BoardLabel = (Board, GameMove)
+type Label = Either GameState BoardLabel
 
 data SearchTree = Node {label :: Label, num :: Int, accum :: Double, children :: [SearchTree]}
   deriving (Eq, Show)
@@ -111,7 +111,7 @@ makeChildrenS state@(GameState board hand) = map makeNode $ possibleMoves' state
     makeNode move = Node (Right (makeBoard move, move)) 0 0 []
     makeBoard move = fromRight undefined $ applyMove' move state
 
-makeChildrenB :: BoardInfo -> [SearchTree]
+makeChildrenB :: BoardLabel -> [SearchTree]
 makeChildrenB (board, _) = map makeNode $ remainingTiles board
   where
     makeNode tile = Node (Left (GameState board tile)) 0 0 []
