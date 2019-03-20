@@ -6,7 +6,7 @@ module Main where
 import Data.Either
 import Data.Tsuro
 import Data.Tsuro.Interface
-import Data.Tsuro.Search
+import Data.Tsuro.Search.Montecarlo
 import Data.Tsuro.Show
 
 

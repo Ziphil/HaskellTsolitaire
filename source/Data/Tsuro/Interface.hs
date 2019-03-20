@@ -7,7 +7,7 @@ import Data.Either
 import Data.List
 import Data.Tsuro
 import Data.Tsuro.Read
-import Data.Tsuro.Search
+import Data.Tsuro.Search.Montecarlo
 import Data.Tsuro.Show
 import System.Console.Pretty
 import System.IO

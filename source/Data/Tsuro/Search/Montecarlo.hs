@@ -1,7 +1,7 @@
 --
 
 
-module Data.Tsuro.Search where
+module Data.Tsuro.Search.Montecarlo where
 
 import Control.Applicative
 import Control.Arrow
