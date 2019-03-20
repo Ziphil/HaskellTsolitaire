@@ -147,10 +147,13 @@ playoutB' board =
     tiles = remainingTiles board
 
 calcReward :: Int -> Int -> Double
-calcReward maxSize size = 
+calcReward maxSize size =
   if size == maxSize
     then 1
-    else max 0 $ 0.4 - (fromIntegral maxSize - fromIntegral size) * 0.1
+    else max 0 $ min (0.4 - (maxSize' - size') * 0.1) ((size' / maxSize') ** 8)
+  where
+    maxSize' = fromIntegral maxSize
+    size' = fromIntegral size
 
 playoutS :: MonadRandom m => GameState -> m Double
 playoutS state@(GameState board _) = 
