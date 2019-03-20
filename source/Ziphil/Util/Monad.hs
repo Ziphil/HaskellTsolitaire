@@ -8,6 +8,10 @@ import Control.Monad
 import Data.Bifunctor
 
 
+infixr 1 <<
+(<<) :: Monad m => m b -> m a -> m b
+(<<) = flip (>>)
+
 outA :: Applicative f => (f a, f b) -> f (a, b)
 outA = uncurry $ liftA2 (,)
 

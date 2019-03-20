@@ -30,7 +30,7 @@ data Edge = TopLeft | TopRight | RightTop | RightBottom | BottomRight | BottomLe
 
 rotateEdge :: Rotation -> Edge -> Edge
 rotateEdge None = id
-rotateEdge Clock = toEnum . flip mod 8 . (+ 2) . fromEnum
+rotateEdge Clock = toEnum . (#% 8) . (+ 2) . fromEnum
 rotateEdge rotation = rotateEdge (pred rotation) . rotateEdge Clock
 
 newtype Aisles = Aisles {rawAisles :: Set (Edge, Edge)}
@@ -121,7 +121,7 @@ normalize :: Tile -> Tile
 normalize tile@(Tile number rotation) = 
   case symmetryOf tile of
     Asymmetric -> tile
-    Dyad -> Tile number $ toEnum $ flip mod 2 $ fromEnum rotation
+    Dyad -> Tile number $ toEnum $ (#% 2) $ fromEnum rotation
     Tetrad -> Tile number None
 
 -- タイルに書かれた通路の対称性を考慮に入れ、与えられたタイルを回転して得られる全てのタイルから成るリストを返します。
