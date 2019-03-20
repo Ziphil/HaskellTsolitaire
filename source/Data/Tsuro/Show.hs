@@ -61,6 +61,12 @@ instance ShowRec [StonePos] where
 instance ShowRec Board where
   showRec (Board tiles _ stones) = showRec tiles ++ " " ++ showRec stones
 
+instance ShowRec TileMove where
+  showRec (pos, tile) = showRec pos ++ showRec tile
+
+instance ShowRec [TileMove] where
+  showRec moves = unwords $ map showRec moves
+
 instance ShowRec GameMove where
   showRec (pos, rotation) = showRec pos ++ showRec rotation
 
