@@ -186,10 +186,13 @@ switch (pos, edge) =
   where
     make (direction, edge) = (adjacent direction pos, edge)
 
+calcOpposite :: ((Int, Rotation), Edge) -> Edge
+calcOpposite (pair, edge) = fromJust $ snd <$> find ((== edge) . fst) (rawAisles $ aisleArray ! pair)
+
 oppositeArray :: Array ((Int, Rotation), Edge) Edge
 oppositeArray = array bounds $ map make $ comb (comb [0 .. tileSize - 1] rotations) edges
   where
-    make (pair, edge) = ((pair, edge), fromJust $ snd <$> find ((== edge) . fst) (rawAisles $ aisleArray ! pair))
+    make pair = (pair, calcOpposite pair)
     rotations = enumFrom (toEnum 0)
     edges = enumFrom (toEnum 0)
     bounds = (((0, None), TopLeft), ((tileSize - 1, Anticlock), LeftTop))
