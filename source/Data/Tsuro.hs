@@ -193,7 +193,7 @@ switch (pos, edge) =
     make (direction, edge) = (adjacent direction pos, edge)
 
 calcOpposite :: (TileInfo, Edge) -> Edge
-calcOpposite (info, edge) = fromJust $ snd <$> find ((== edge) . fst) (rawAisles $ aisleArray ! info)
+calcOpposite (info, edge) = snd $ fromJust $ find ((== edge) . fst) (rawAisles $ aisleArray ! info)
 
 oppositeArray :: Array (TileInfo, Edge) Edge
 oppositeArray = array bounds $ map make $ comb (comb [0 .. tileSize - 1] rotations) edges
