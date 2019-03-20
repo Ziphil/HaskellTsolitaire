@@ -20,3 +20,6 @@ infixr 9 .^
 infixr 9 .^^
 (.^^) :: (d -> e) -> (a -> b -> c -> d) -> (a -> b -> c -> e)
 (.^^) = (.) . (.) . (.)
+
+allEnums :: Enum a => [a]
+allEnums = enumFrom (toEnum 0)

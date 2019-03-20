@@ -44,11 +44,10 @@ rotateAisles = outAisles . Set.map . bimapSame . rotateEdge
     outAisles func (Aisles set) = Aisles (func set)
 
 aisleArray :: Array TileInfo Aisles
-aisleArray = array ((0, None), (34, Anticlock)) $ map make $ comb dataList rotations
+aisleArray = array ((0, None), (34, Anticlock)) $ map make $ comb dataList allEnums
   where
     make ((number, list), rotation) = ((number, rotation), rotateAisles rotation $ makeAisles list)
     makeAisles = Aisles . Set.fromList . concatMap (take 2 . iterate swap)
-    rotations = enumFrom (toEnum 0)
     dataList =
       [ (0, [(TopLeft, TopRight), (RightTop, RightBottom), (BottomRight, BottomLeft), (LeftBottom, LeftTop)])
       , (1, [(TopLeft, TopRight), (RightTop, RightBottom), (BottomRight, LeftBottom), (BottomLeft, LeftTop)])
@@ -196,11 +195,9 @@ calcOpposite :: (TileInfo, Edge) -> Edge
 calcOpposite (info, edge) = snd $ fromJust $ find ((== edge) . fst) (rawAisles $ aisleArray ! info)
 
 oppositeArray :: Array (TileInfo, Edge) Edge
-oppositeArray = array bounds $ map make $ comb (comb [0 .. tileSize - 1] rotations) edges
+oppositeArray = array bounds $ map make $ comb (comb [0 .. tileSize - 1] allEnums) allEnums
   where
     make info = (info, calcOpposite info)
-    rotations = enumFrom (toEnum 0)
-    edges = enumFrom (toEnum 0)
     bounds = (((0, None), TopLeft), ((tileSize - 1, Anticlock), LeftTop))
     
 -- 端から通路情報を辿ることで到達する反対側の端を返します。
