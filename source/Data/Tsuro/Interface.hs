@@ -12,6 +12,7 @@ import Data.Tsuro.Show
 import System.Console.Pretty
 import System.IO
 import System.Random
+import Text.Printf
 import Ziphil.Util.List
 
 
@@ -66,8 +67,8 @@ inputGameMove game = do
       flushStrLn $ colorMessage $ "@ Possible moves: " ++ unwords (map showRec $ possibleMoves game)
       inputGameMove game
     ":s" -> do
-      move <- search $ fromRight undefined (gameStateOf game)
-      flushStrLn $ colorMessage $ "@ Suggested move: " ++ showRec move
+      (move, ratio) <- searchWithRatio $ fromRight undefined (gameStateOf game)
+      flushStrLn $ colorMessage $ "@ Suggested move: " ++ showRec move ++ " (" ++ printf "%.2f" (ratio * 100) ++ "%)"
       inputGameMove game
     _ -> case readRec input of
       Nothing -> do

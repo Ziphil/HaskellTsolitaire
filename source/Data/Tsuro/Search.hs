@@ -59,6 +59,11 @@ search state = make <$> iterateMontecarlo (initialSearchTree state)
   where
     make = snd . fromRight undefined . label . maximumBy (comparing ratio) . children
 
+searchWithRatio :: MonadRandom m => GameState -> m (GameMove, Double)
+searchWithRatio state = make <$> iterateMontecarlo (initialSearchTree state)
+  where
+    make = (snd . fromRight undefined . label &&& ratio) . maximumBy (comparing ratio) . children
+
 iterateMontecarlo :: MonadRandom m => SearchTree -> m SearchTree
 iterateMontecarlo node = iterationList !! iterateSize
   where
