@@ -36,12 +36,14 @@ rotateEdge rotation = rotateEdge (pred rotation) . rotateEdge Clock
 newtype Aisles = Aisles {rawAisles :: Set (Edge, Edge)}
   deriving (Eq, Show)
 
+type TileInfo = (Int, Rotation)
+
 rotateAisles :: Rotation -> Aisles -> Aisles
 rotateAisles = outAisles . Set.map . bimapSame . rotateEdge
   where
     outAisles func (Aisles set) = Aisles (func set)
 
-aisleArray :: Array (Int, Rotation) Aisles
+aisleArray :: Array TileInfo Aisles
 aisleArray = array ((0, None), (34, Anticlock)) $ map make $ comb dataList rotations
   where
     make ((number, list), rotation) = ((number, rotation), rotateAisles rotation $ makeAisles list)
@@ -186,13 +188,13 @@ switch (pos, edge) =
   where
     make (direction, edge) = (adjacent direction pos, edge)
 
-calcOpposite :: ((Int, Rotation), Edge) -> Edge
-calcOpposite (pair, edge) = fromJust $ snd <$> find ((== edge) . fst) (rawAisles $ aisleArray ! pair)
+calcOpposite :: (TileInfo, Edge) -> Edge
+calcOpposite (info, edge) = fromJust $ snd <$> find ((== edge) . fst) (rawAisles $ aisleArray ! info)
 
-oppositeArray :: Array ((Int, Rotation), Edge) Edge
+oppositeArray :: Array (TileInfo, Edge) Edge
 oppositeArray = array bounds $ map make $ comb (comb [0 .. tileSize - 1] rotations) edges
   where
-    make pair = (pair, calcOpposite pair)
+    make info = (info, calcOpposite info)
     rotations = enumFrom (toEnum 0)
     edges = enumFrom (toEnum 0)
     bounds = (((0, None), TopLeft), ((tileSize - 1, Anticlock), LeftTop))
