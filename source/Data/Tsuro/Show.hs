@@ -8,7 +8,6 @@ import Data.Array.IArray
 import Data.List
 import Data.Tsuro
 import System.Console.Pretty
-import Ziphil.Util.Core
 import Ziphil.Util.List
 
 
@@ -51,7 +50,7 @@ instance ShowRec Tiles where
       wholeString = intercalate "\n" $ map rowString boardList
       rowString y = interpose "[ " " ]" $ unwords $ rowList y
       rowList y = map (showRec' . (tiles !) . (, y)) boardList
-      showRec' = maybe " . " (colorTile . pad 3 . showRec)
+      showRec' = maybe " . " (colorTile . padl 3 ' ' . showRec)
       boardList = [0 .. boardSize - 1]
 
 instance ShowRec [StonePos] where

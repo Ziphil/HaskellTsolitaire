@@ -12,7 +12,6 @@ import Data.Tsuro.Show
 import System.Console.Pretty
 import System.IO
 import System.Random
-import Ziphil.Util.Core
 import Ziphil.Util.List
 
 
@@ -42,7 +41,7 @@ flushStr string = putStr string >> hFlush stdout
 showInputString :: Game -> String
 showInputString game = either (const "") show' (number <$> nextHand game)
   where
-    show' = interpose (colorInput "<?> ") (colorInput " -> ") . colorHand . pad 2 . show
+    show' = interpose (colorInput "<?> ") (colorInput " -> ") . colorHand . padl 2 ' ' . show
 
 loop :: Game -> IO ()
 loop game = do

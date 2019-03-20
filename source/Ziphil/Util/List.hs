@@ -28,6 +28,14 @@ update i next (x : xs) =
     then next : xs
     else x : update (i - 1) next xs
 
+-- リストが与えられた長さになるように、そのリストの左側をスペースで埋めた文字列を返します。
+-- リストが与えられた長さより長い場合は、それをそのまま返します。
+padl :: Int -> a -> [a] -> [a]
+padl size space list = replicate (size - length list) space ++ list
+
+padr :: Int -> a -> [a] -> [a]
+padr size space list = list ++ replicate (size - length list) space
+
 interpose :: [a] -> [a] -> [a] -> [a]
 interpose left right list = left ++ list ++ right
 

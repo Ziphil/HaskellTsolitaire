@@ -12,8 +12,3 @@ infixr 9 .^
 infixr 9 .^^
 (.^^) :: (d -> e) -> (a -> b -> c -> d) -> (a -> b -> c -> e)
 (.^^) = (.) . (.) . (.)
-
--- 文字列が与えられた長さになるように、その文字列の左側をスペースで埋めた文字列を返します。
--- 文字列が与えられた長さより長い場合は、そのまま返します。
-pad :: Int -> String -> String
-pad size string = replicate (size - length string) ' ' ++ string
