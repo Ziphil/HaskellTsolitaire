@@ -11,7 +11,7 @@ import Data.List
 import Data.Ord
 import Data.Tsuro
 import System.Random
-import Ziphil.Util.Core
+import Ziphil.Util.List
 import Ziphil.Util.Random
 
 

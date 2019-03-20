@@ -9,6 +9,8 @@ import Data.Char
 import Data.List
 import Data.Tsuro
 import Ziphil.Util.Core
+import Ziphil.Util.List
+import Ziphil.Util.Monad
 
 
 class ReadRec a where

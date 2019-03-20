@@ -13,6 +13,7 @@ import System.Console.Pretty
 import System.IO
 import System.Random
 import Ziphil.Util.Core
+import Ziphil.Util.List
 
 
 start :: IO ()

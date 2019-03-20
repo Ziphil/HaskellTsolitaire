@@ -9,6 +9,7 @@ import Data.List
 import Data.Tsuro
 import System.Console.Pretty
 import Ziphil.Util.Core
+import Ziphil.Util.List
 
 
 class ShowRec a where

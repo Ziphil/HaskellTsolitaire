@@ -17,6 +17,8 @@ import qualified Data.Set as Set
 import Data.Tuple
 import System.Random
 import Ziphil.Util.Core
+import Ziphil.Util.List
+import Ziphil.Util.Monad
 import Ziphil.Util.Random
 
 
