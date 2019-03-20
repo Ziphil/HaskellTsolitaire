@@ -126,13 +126,17 @@ normalize tile@(Tile number rotation) =
     Dyad -> Tile number $ toEnum $ (#% 2) $ fromEnum rotation
     Tetrad -> Tile number None
 
--- タイルに書かれた通路の対称性を考慮に入れ、与えられたタイルを回転して得られる全てのタイルから成るリストを返します。
-rotatedTiles :: Tile -> [Tile]
-rotatedTiles tile@(Tile number _) = 
-  map (Tile number) $ case symmetryOf tile of
+-- タイルに書かれた通路の対称性を考慮に入れ、見た目が同じになる回転情報は片方のみが含まれるようにして、回転情報全体のリストを返します。
+distinctRotations :: Tile -> [Rotation]
+distinctRotations tile = 
+  case symmetryOf tile of
     Asymmetric -> [None, Clock, Inverse, Anticlock]
     Dyad -> [None, Clock]
     Tetrad -> [None]
+
+-- タイルに書かれた通路の対称性を考慮に入れ、与えられたタイルを回転して得られる全てのタイルから成るリストを返します。
+rotatedTiles :: Tile -> [Tile]
+rotatedTiles tile@(Tile number _) = map (Tile number) $ distinctRotations tile
 
 type TilePos = (Int, Int)
 type StonePos = (TilePos, Edge)
@@ -356,6 +360,13 @@ possibleMoves' (GameState board hand) = concatMap make $ rotatedTiles hand
 -- タイルに書かれた通路の対称性を考慮に入れるため、回転情報が違っていても見た目が同じになる手については、その片方のみがリストに含まれます。
 possibleMoves :: Game -> [GameMove]
 possibleMoves game = fromRight [] $ possibleMoves' <$> gameStateOf game
+
+-- 可能な手とその手を実行した後の盤面から成るリストを返します。
+possibleMovesAndBoards' :: GameState -> [(GameMove, Board)]
+possibleMovesAndBoards' (GameState board hand) = rights $ map make $ comb wholeTilePoss rotations
+  where
+    make move = (move, ) <$> putTileAndUpdate (tileMoveOf hand move) board
+    rotations = distinctRotations hand
 
 -- ゲームをクリアしていれば True を返します。
 isCleared :: Game -> Bool

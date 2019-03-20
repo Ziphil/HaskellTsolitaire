@@ -111,10 +111,9 @@ makeChildren :: Label -> [SearchTree]
 makeChildren = either makeChildrenS makeChildrenB
 
 makeChildrenS :: GameState -> [SearchTree]
-makeChildrenS state@(GameState board hand) = map makeNode $ possibleMoves' state
+makeChildrenS state@(GameState board hand) = map makeNode $ possibleMovesAndBoards' state
   where
-    makeNode move = Node (Right (makeBoard move, move)) 0 0 []
-    makeBoard move = fromRight undefined $ applyMove' move state
+    makeNode (move, board) = Node (Right (board, move)) 0 0 []
 
 makeChildrenB :: BoardLabel -> [SearchTree]
 makeChildrenB (board, _) = map makeNode $ remainingTiles board
@@ -128,22 +127,20 @@ playout = either playoutS (playoutB . fst)
 
 playoutS' :: MonadRandom m => GameState -> m Int
 playoutS' state = 
-  if null moves
+  if null movesAndBoards
     then return 0
-    else (+ 1) <$> (playoutB' =<< makeNextBoard <$> move)
+    else (+ 1) <$> (playoutB' =<< board)
   where
-    makeNextBoard move = fromRight undefined $ applyMove' move state
-    move = pick moves
-    moves = possibleMoves' state
+    board = snd <$> pick movesAndBoards
+    movesAndBoards = possibleMovesAndBoards' state
 
 playoutB' :: MonadRandom m => Board -> m Int
 playoutB' board = 
   if null tiles
     then return 0
-    else playoutS' =<< makeBoard <$> tile
+    else playoutS' =<< state
   where
-    makeBoard tile = GameState board tile
-    tile = pick tiles
+    state = GameState board <$> pick tiles
     tiles = remainingTiles board
 
 calcReward :: Int -> Int -> Double
