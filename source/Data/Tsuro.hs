@@ -231,19 +231,19 @@ initialStones = [((1, 0), TopRight), ((4, 0), TopLeft), ((5, 1), RightBottom), (
 initialBoard :: Board
 initialBoard = Board emptyTiles wholeTiles adjacentPoss initialStones
   where
-    adjacentPoss = filter (flip isAdjacentStone' initialStones) wholeTilePoss
+    adjacentPoss = filter (flip isAdjacent' initialStones) wholeTilePoss
 
 -- 指定された位置にタイルが置かれていないか確かめ、置かれていなければ True を返します。
 isEmpty :: TilePos -> Board -> Bool
 isEmpty tilePos (Board (Tiles tiles) _ _ _) = isNothing (tiles ! tilePos)
 
-isAdjacentStone' :: TilePos -> [StonePos] -> Bool
-isAdjacentStone' pos stones = any ((== pos) . fst) stones
+isAdjacent' :: TilePos -> [StonePos] -> Bool
+isAdjacent' pos stones = any ((== pos) . fst) stones
 
 -- 指定された位置が何らかの駒と隣接しているかどうか確かめ、隣接していれば True を返します。
 -- この関数が False を返すような位置には、ルール上タイルを置くことができません。
-isAdjacentStone :: TilePos -> Board -> Bool
-isAdjacentStone pos (Board _ _ _ stones) = isAdjacentStone' pos stones
+isAdjacent :: TilePos -> Board -> Bool
+isAdjacent pos (Board _ _ _ stones) = isAdjacent' pos stones
 
 -- 盤面に使われているタイルのリストを返します。
 usedTiles :: Board -> [Tile]
@@ -257,10 +257,10 @@ type TileMove = (TilePos, Tile)
 -- この関数単独では駒を動かしません。
 -- そのため、駒に隣接しているタイルのリストも更新しません。
 putTile :: TileMove -> Board -> WithInvalid Board
-putTile move@(pos, tile) board = unless isPosEmpty (Left TileAlreadyPut) >> unless isPosAdjacentStone (Left DetachedTilePos) >> putTileWithoutCheck move board
+putTile move@(pos, tile) board = unless isPosEmpty (Left TileAlreadyPut) >> unless isPosAdjacent (Left DetachedTilePos) >> putTileWithoutCheck move board
   where
     isPosEmpty = isEmpty pos board
-    isPosAdjacentStone = isAdjacentStone pos board
+    isPosAdjacent = isAdjacent pos board
 
 putTileWithoutCheck :: TileMove -> Board -> WithInvalid Board
 putTileWithoutCheck (pos, tile) (Board tiles remainingTiles adjacentPoss stones) = Right nextBoard
@@ -274,7 +274,7 @@ putTileWithoutCheck (pos, tile) (Board tiles remainingTiles adjacentPoss stones)
 advanceStones :: Board -> WithInvalid Board
 advanceStones (Board tiles remainingTiles _ stones) = make <$> mapM (advanceStone tiles) stones
   where
-    make stones = Board tiles remainingTiles (filter (flip isAdjacentStone' stones) wholeTilePoss) stones
+    make stones = Board tiles remainingTiles (filter (flip isAdjacent' stones) wholeTilePoss) stones
 
 canAdvanceStones :: Board -> Bool
 canAdvanceStones = isRight . advanceStones
