@@ -377,12 +377,18 @@ possibleMoves :: Game -> [GameMove]
 possibleMoves game = fromRight [] $ possibleMoves' <$> gameStateOf game
 
 -- 可能な手とその手を実行した後の盤面から成るリストを返します。
+-- possibleMoves' と applyMove' を別々に呼ぶよりも効率的です。
 possibleMovesAndBoards' :: GameState -> [(GameMove, Board)]
 possibleMovesAndBoards' (GameState board hand) = rights $ map make $ comb poss rotations
   where
     make move = (move, ) <$> putTileWithoutCheck (tileMoveOf hand move) board
     poss = adjacentPoss board
     rotations = distinctRotations hand
+
+-- 可能な手とその手を実行した後のゲームから成るリストを返します。
+-- possibleMoves と applyMove を別々に呼ぶよりも効率的です。
+possibleMovesAndGames :: Game -> [(GameMove, Game)]
+possibleMovesAndGames = error "not implemented"
 
 -- ゲームをクリアしていれば True を返します。
 isCleared :: Game -> Bool
