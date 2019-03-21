@@ -30,7 +30,7 @@ iterateSize :: Int
 iterateSize = 10000
 
 expParam :: Double
-expParam = 0.7
+expParam = 3
 
 -- そのノードからの探索における報酬値の平均を返します。
 ratio :: SearchTree -> Double
