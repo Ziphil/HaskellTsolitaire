@@ -31,7 +31,6 @@ simulate' search result@(game, record) =
 simulateOnce :: Monad m => Search m -> Game -> m (Game, TileMove)
 simulateOnce search game = (makeGame &&& makeTileMove) <$> search state
   where
-    makeTileMove move = tileMoveOf hand move
+    makeTileMove move = tileMoveOf (hand state) move
     makeGame move = fromRight (error "weird search") $ applyMove move game
-    hand = fromRight undefined $ nextHand game
     state = fromRight undefined $ gameStateOf game
