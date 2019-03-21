@@ -67,6 +67,7 @@ overTest = it "reports that the game is over when the next tile cannot be put" $
 
 wholePlayTest :: SpecWith (Arg Expectation)
 wholePlayTest = it "" $ do
+  hand `shouldBe` Right (Tile 29 None)
   possibleMoves <$> game `shouldBe` Right [((2, 1), Clock)]
   isOver <$> game `shouldBe` Right False
   isCleared <$> finalGame `shouldBe` Right True
@@ -78,6 +79,7 @@ wholePlayTest = it "" $ do
         <<@@ ((4, 2), Inverse) <<@@ ((1, 1), None) <<@@ ((4, 4), Clock) <<@@ ((0, 0), None) <<@@ ((5, 3), Clock) <<@@ ((2, 5), Inverse) <<@@ ((5, 2), Anticlock)
         <<@@ ((3, 5), Inverse) <<@@ ((1, 2), Clock) <<@@ ((0, 2), Clock) <<@@ ((2, 3), None) <<@@ ((3, 0), Anticlock) <<@@ ((3, 4), Inverse) <<@@ ((2, 0), None)
         <<@@ ((2, 4), Clock) <<@@ ((4, 3), Inverse) <<@@ ((3, 3), None) <<@@ ((1, 4), None) <<@@ ((3, 2), None) <<@@ ((3, 1), Clock)
+      hand = nextHand =<< game
       finalGame = game <<@@ ((2, 1), Clock)
 
 test :: SpecWith ()
