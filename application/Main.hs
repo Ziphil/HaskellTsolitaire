@@ -5,7 +5,7 @@ module Main where
 
 import Data.Either
 import Data.Tsuro
-import Data.Tsuro.Interface
+import qualified Data.Tsuro.Interface.Game as Game
 import qualified Data.Tsuro.Search.Core as Search
 import qualified Data.Tsuro.Search.Montecarlo as Montecarlo
 import Data.Tsuro.Show

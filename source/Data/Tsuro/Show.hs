@@ -7,6 +7,7 @@ module Data.Tsuro.Show where
 import Data.Array.IArray
 import Data.List
 import Data.Tsuro
+import Data.Tsuro.Interface.Core
 import System.Console.Pretty
 import Ziphil.Util.List
 
@@ -37,12 +38,6 @@ instance ShowRich Tile where
 
 instance ShowRich TilePos where
   showRich (x, y) = show (y + 1) ++ ["ABCDEF" !! x]
-
-colorTile :: Pretty a => a -> a
-colorTile = style Reverse
-
-colorTurn :: Pretty a => a -> a
-colorTurn = style Underline . color Black
 
 instance ShowRich Tiles where
   showRich (Tiles tiles) = wholeString

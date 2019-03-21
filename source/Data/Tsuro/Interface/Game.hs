@@ -1,11 +1,12 @@
 --
 
 
-module Data.Tsuro.Interface where
+module Data.Tsuro.Interface.Game where
 
 import Data.Either
 import Data.List
 import Data.Tsuro
+import Data.Tsuro.Interface.Core
 import Data.Tsuro.Read
 import Data.Tsuro.Search.Core
 import qualified Data.Tsuro.Search.Montecarlo as Montecarlo
@@ -21,24 +22,6 @@ start :: IO ()
 start = do
   game <- initialGame
   loop game
-
-colorInput :: Pretty a => a -> a
-colorInput = color Yellow
-
-colorHand :: Pretty a => a -> a
-colorHand = style Reverse . color Yellow
-
-colorMessage :: Pretty a => a -> a
-colorMessage = color Cyan
-
-colorError :: Pretty a => a -> a
-colorError = color Red
-
-flushStrLn :: String -> IO ()
-flushStrLn string = putStrLn string >> hFlush stdout
-
-flushStr :: String -> IO ()
-flushStr string = putStr string >> hFlush stdout
 
 showInputString :: Game -> String
 showInputString game = either (const "") show' (number <$> nextHand game)
