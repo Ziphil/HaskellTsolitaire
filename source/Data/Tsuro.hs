@@ -370,7 +370,9 @@ isCleared :: Game -> Bool
 isCleared (Game _ hands) = null hands
 
 isOver' :: GameState -> Bool
-isOver' (GameState board hand) = not $ canPutTileAnywhere hand board
+isOver' (GameState board hand) = not $ any check $ rotatedTiles hand
+  where
+    check tile = canPutTileAnywhere tile board
 
 -- 次に置くべきタイルを置ける場所がなく、これ以上ゲームを進められない場合に、True を返します。
 isOver :: Game -> Bool
