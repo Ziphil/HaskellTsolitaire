@@ -13,21 +13,21 @@ import Ziphil.Util.List
 import Ziphil.Util.Monad
 
 
-class ReadRec a where
-  readRec :: String -> Maybe a
+class ReadRich a where
+  readRich :: String -> Maybe a
 
-instance ReadRec Rotation where
-  readRec "T" = Just None
-  readRec "R" = Just Clock
-  readRec "B" = Just Inverse
-  readRec "L" = Just Anticlock
-  readRec _ = Nothing
+instance ReadRich Rotation where
+  readRich "T" = Just None
+  readRich "R" = Just Clock
+  readRich "B" = Just Inverse
+  readRich "L" = Just Anticlock
+  readRich _ = Nothing
 
-instance ReadRec TilePos where
-  readRec string = guard (length string == 2) >> outA (parseX $ string !! 1, parseY $ string !! 0)
+instance ReadRich TilePos where
+  readRich string = guard (length string == 2) >> outA (parseX $ string !! 1, parseY $ string !! 0)
     where
       parseX char = elemIndex char "ABCDEF"
       parseY char = guard (inRange (1, 6) $ digitToInt char) >> Just (digitToInt char - 1)
 
-instance ReadRec GameMove where
-  readRec string = guard (length string == 3) >> outA (readRec $ string !!& [0, 1], readRec $ string !!& [2])
+instance ReadRich GameMove where
+  readRich string = guard (length string == 3) >> outA (readRich $ string !!& [0, 1], readRich $ string !!& [2])

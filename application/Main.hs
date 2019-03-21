@@ -22,5 +22,5 @@ profile = move >> return ()
 simulate :: IO ()
 simulate = putStrLn . makeString =<< result
   where
-    makeString ((game, record), status) = show status ++ ": " ++ showRec record ++ " -> " ++ either (const "") (show . number) (nextHand game) ++ "\n" ++ showRec game
+    makeString ((game, record), status) = show status ++ ": " ++ showRich record ++ " -> " ++ either (const "") (show . number) (nextHand game) ++ "\n" ++ showRich game
     result = Search.simulate Montecarlo.defaultConfig

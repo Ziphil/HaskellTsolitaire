@@ -47,7 +47,7 @@ showInputString game = either (const "") show' (number <$> nextHand game)
 
 loop :: Game -> IO ()
 loop game = do
-  flushStrLn $ showRec game
+  flushStrLn $ showRich game
   case (isCleared game, isOver game) of
     (True, _) -> flushStrLn $ colorMessage "@ Congratulations! You win the game."
     (False, True) -> do
@@ -65,13 +65,13 @@ inputGameMove game = do
   input <- getLine
   case input of
     ":p" -> do
-      flushStrLn $ colorMessage $ "@ Possible moves: " ++ unwords (map showRec $ possibleMoves game)
+      flushStrLn $ colorMessage $ "@ Possible moves: " ++ unwords (map showRich $ possibleMoves game)
       inputGameMove game
     ":s" -> do
       (move, ratio) <- runSearchWithRatio Montecarlo.defaultConfig $ fromRight undefined (gameStateOf game)
-      flushStrLn $ colorMessage $ "@ Suggested move: " ++ showRec move ++ " (" ++ printf "%.2f" (ratio * 100) ++ "%)"
+      flushStrLn $ colorMessage $ "@ Suggested move: " ++ showRich move ++ " (" ++ printf "%.2f" (ratio * 100) ++ "%)"
       inputGameMove game
-    _ -> case readRec input of
+    _ -> case readRich input of
       Nothing -> do
         flushStrLn $ colorError "@ Invalid input. Specify the position and rotation in the form like '5FR' or '1BT'."
         inputGameMove game
