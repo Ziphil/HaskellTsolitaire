@@ -59,7 +59,7 @@ instance ShowRec [StonePos] where
       showRec' (tilePos, edge) = showRec tilePos ++ showRec edge
 
 instance ShowRec Board where
-  showRec (Board tiles _ stones) = showRec tiles ++ " " ++ showRec stones
+  showRec (Board tiles _ _ stones) = showRec tiles ++ " " ++ showRec stones
 
 instance ShowRec TileMove where
   showRec (pos, tile) = showRec pos ++ showRec tile

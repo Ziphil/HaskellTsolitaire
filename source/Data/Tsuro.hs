@@ -220,7 +220,7 @@ advanceStone (Tiles tiles) (tilePos, edge) =
         nextStonePos = switch (tilePos, nextEdge)
         nextEdge = opposite tile edge
 
-data Board = Board {tiles :: Tiles, remainingTiles :: [Tile], stones :: [StonePos]}
+data Board = Board {tiles :: Tiles, remainingTiles :: [Tile], adjacentPoss :: [TilePos], stones :: [StonePos]}
   deriving (Eq, Show)
 
 -- 駒の初期位置を返します。
@@ -229,20 +229,25 @@ initialStones = [((1, 0), TopRight), ((4, 0), TopLeft), ((5, 1), RightBottom), (
 
 -- 初期状態の盤面を返します。
 initialBoard :: Board
-initialBoard = Board emptyTiles wholeTiles initialStones
+initialBoard = Board emptyTiles wholeTiles adjacentPoss initialStones
+  where
+    adjacentPoss = filter (flip isAdjacentStone' initialStones) wholeTilePoss
 
 -- 指定された位置にタイルが置かれていないか確かめ、置かれていなければ True を返します。
 isEmpty :: TilePos -> Board -> Bool
-isEmpty tilePos (Board (Tiles tiles) _ _) = isNothing (tiles ! tilePos)
+isEmpty tilePos (Board (Tiles tiles) _ _ _) = isNothing (tiles ! tilePos)
+
+isAdjacentStone' :: TilePos -> [StonePos] -> Bool
+isAdjacentStone' pos stones = any ((== pos) . fst) stones
 
 -- 指定された位置が何らかの駒と隣接しているかどうか確かめ、隣接していれば True を返します。
 -- この関数が False を返すような位置には、ルール上タイルを置くことができません。
 isAdjacentStone :: TilePos -> Board -> Bool
-isAdjacentStone pos (Board _ _ stones) = any ((== pos) . fst) stones
+isAdjacentStone pos (Board _ _ _ stones) = isAdjacentStone' pos stones
 
 -- 盤面に使われているタイルのリストを返します。
 usedTiles :: Board -> [Tile]
-usedTiles (Board (Tiles tiles) _ _) = catMaybes $ elems tiles
+usedTiles (Board (Tiles tiles) _ _ _) = catMaybes $ elems tiles
 
 type TileMove = (TilePos, Tile)
 
@@ -250,19 +255,26 @@ type TileMove = (TilePos, Tile)
 -- 指定された位置にすでにタイルが置かれている場合は、新たにタイルを置くことはできないので、TileAlreadyPut を返します。
 -- また、指定された位置が何らかの駒と隣接していない場合は、ルール上その位置にタイルを置くことはできないので、DetachedTilePos を返します。
 -- この関数単独では駒を動かしません。
+-- そのため、駒に隣接しているタイルのリストも更新しません。
 putTile :: TileMove -> Board -> WithInvalid Board
-putTile (pos, tile) board@(Board tiles remainingTiles stones) =
-  unless isPosEmpty (Left TileAlreadyPut) >> unless isPosAdjacentStone (Left DetachedTilePos) >> Right nextBoard
-    where
-      isPosEmpty = isEmpty pos board
-      isPosAdjacentStone = isAdjacentStone pos board
-      nextBoard = Board (updateTile pos tile tiles) nextRemainingTiles stones
-      nextRemainingTiles = deleteBy (on (==) number) tile remainingTiles
+putTile move@(pos, tile) board = unless isPosEmpty (Left TileAlreadyPut) >> unless isPosAdjacentStone (Left DetachedTilePos) >> putTileWithoutCheck move board
+  where
+    isPosEmpty = isEmpty pos board
+    isPosAdjacentStone = isAdjacentStone pos board
+
+putTileWithoutCheck :: TileMove -> Board -> WithInvalid Board
+putTileWithoutCheck (pos, tile) (Board tiles remainingTiles adjacentPoss stones) = Right nextBoard
+  where
+    nextBoard = Board nextTiles nextRemainingTiles adjacentPoss stones
+    nextTiles = updateTile pos tile tiles
+    nextRemainingTiles = deleteBy (on (==) number) tile remainingTiles
 
 -- 現在の盤面に従って全ての駒を移動させ、その結果の盤面を返します。
 -- 進む途中で盤面外に出てしまうような駒が 1 つでもある場合は、OutOfBoard を返します。
 advanceStones :: Board -> WithInvalid Board
-advanceStones (Board tiles remainingTiles stones) = Board tiles remainingTiles <$> mapM (advanceStone tiles) stones
+advanceStones (Board tiles remainingTiles _ stones) = make <$> mapM (advanceStone tiles) stones
+  where
+    make stones = Board tiles remainingTiles (filter (flip isAdjacentStone' stones) wholeTilePoss) stones
 
 canAdvanceStones :: Board -> Bool
 canAdvanceStones = isRight . advanceStones
@@ -272,17 +284,23 @@ canAdvanceStones = isRight . advanceStones
 putTileAndUpdate :: TileMove -> Board -> WithInvalid Board
 putTileAndUpdate move = advanceStones <=< putTile move
 
+putTileAndUpdateWithoutCheck :: TileMove -> Board -> WithInvalid Board
+putTileAndUpdateWithoutCheck move = advanceStones <=< putTileWithoutCheck move
+
 -- 指定された位置にタイルを置くことができるか確かめ、置けるならば True を返します。
 canPutTile :: TileMove -> Board -> Bool
 canPutTile = isRight .^ putTileAndUpdate
 
+canPutTileWithoutCheck :: TileMove -> Board -> Bool
+canPutTileWithoutCheck = isRight .^ putTileAndUpdateWithoutCheck
+
 -- 指定されたタイルを置ける位置が存在するか確かめ、存在するならば True を返します。
 canPutTileAnywhere :: Tile -> Board -> Bool
-canPutTileAnywhere tile board = any (flip canPutTile board . (, tile)) wholeTilePoss
+canPutTileAnywhere tile board = any (flip canPutTileWithoutCheck board . (, tile)) $ adjacentPoss board
 
 -- 与えられたタイルを置ける位置のリストを返します。
 possiblePoss :: Tile -> Board -> [TilePos]
-possiblePoss tile board = filter (flip canPutTile board . (, tile)) wholeTilePoss
+possiblePoss tile board = filter (flip canPutTileWithoutCheck board . (, tile)) $ adjacentPoss board
 
 data Game = Game {board :: Board, hands :: [Tile]}
   deriving (Eq, Show)
@@ -360,9 +378,10 @@ possibleMoves game = fromRight [] $ possibleMoves' <$> gameStateOf game
 
 -- 可能な手とその手を実行した後の盤面から成るリストを返します。
 possibleMovesAndBoards' :: GameState -> [(GameMove, Board)]
-possibleMovesAndBoards' (GameState board hand) = rights $ map make $ comb wholeTilePoss rotations
+possibleMovesAndBoards' (GameState board hand) = rights $ map make $ comb poss rotations
   where
-    make move = (move, ) <$> putTileAndUpdate (tileMoveOf hand move) board
+    make move = (move, ) <$> putTileAndUpdateWithoutCheck (tileMoveOf hand move) board
+    poss = adjacentPoss board
     rotations = distinctRotations hand
 
 -- ゲームをクリアしていれば True を返します。
