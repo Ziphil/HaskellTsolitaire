@@ -18,6 +18,8 @@ type RandomSearch m = GameState -> m GameMove
 type Record = [TileMove]
 type SearchResult = (Game, Record)
 
+-- 与えられた探索アルゴリズムを用いて、クリアするか詰むかするまでゲームをプレイします。
+-- クリアしたか詰んだかの情報に加え、プレイ後のゲーム状況および棋譜を返します。
 simulate :: Search -> Game -> (SearchResult, SimulateStatus)
 simulate search game = runIdentity $ simulate' (return . search) game
 
