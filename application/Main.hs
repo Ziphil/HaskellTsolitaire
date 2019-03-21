@@ -17,10 +17,10 @@ main = simulate
 profile :: IO ()
 profile = move >> return ()
   where
-    move = Montecarlo.search =<< fromRight undefined . gameStateOf <$> initialGame
+    move = Search.runSearch Montecarlo.defaultConfig =<< fromRight undefined . gameStateOf <$> initialGame
 
 simulate :: IO ()
 simulate = putStrLn . makeString =<< result
   where
     makeString ((game, record), status) = show status ++ ": " ++ showRec record ++ " -> " ++ either (const "") (show . number) (nextHand game) ++ "\n" ++ showRec game
-    result = Search.simulate' Montecarlo.search
+    result = Search.simulate Montecarlo.defaultConfig

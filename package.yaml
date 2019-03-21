@@ -15,6 +15,7 @@ dependencies:
   - hspec
   - pretty-terminal
   - random
+  - reflection
   - MonadRandom
 
 library:

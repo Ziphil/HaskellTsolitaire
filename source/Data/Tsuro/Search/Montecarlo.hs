@@ -1,4 +1,7 @@
---
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE ImplicitParams #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 
 module Data.Tsuro.Search.Montecarlo where
@@ -9,28 +12,28 @@ import Control.Monad.Random
 import Data.Either
 import Data.List
 import Data.Ord
+import Data.Reflection
 import Data.Tsuro
+import Data.Tsuro.Search.Core
 import System.Random
 import Ziphil.Util.List
 import Ziphil.Util.Random
 
+
+data Config = Config {iterateSize :: Int, thresholdNum :: Int, expParam :: Double}
+
+instance MonadRandom m => Search m Config where
+  runSearch config = give config search
+  runSearchWithRatio config = give config searchWithRatio
+
+defaultConfig :: Config
+defaultConfig = Config 10000 5 3
 
 type BoardLabel = (Board, GameMove)
 type Label = Either GameState BoardLabel
 
 data SearchTree = Node {label :: Label, num :: Int, accum :: Double, children :: [SearchTree]}
   deriving (Eq, Show)
-
--- 葉ノードから子ノードを展開せずにプレイアウトする回数の閾値を返します。
-thresholdNum :: Int
-thresholdNum = 5
-
--- モンテカルロ木探索を実行するステップ数を返します。
-iterateSize :: Int
-iterateSize = 10000
-
-expParam :: Double
-expParam = 3
 
 -- そのノードからの探索における報酬値の平均を返します。
 ratio :: SearchTree -> Double
@@ -41,52 +44,54 @@ ratio (Node _ num accum _) =
 
 -- 探索回数が少ないノードもある程度探索されるようにするための補正項を返します。
 -- ここでは、UCT (upper confidence bound applied to tree) に基づく値を返します。
-correction :: SearchTree -> SearchTree -> Double
+correction :: Given Config => SearchTree -> SearchTree -> Double
 correction parent child = 
   if num child == 0
     then 1 / 0
-    else sqrt ((log $ fromIntegral $ num parent) / (fromIntegral $ num child)) * expParam
+    else sqrt ((log $ fromIntegral $ num parent) / (fromIntegral $ num child)) * expParam given
 
-score :: SearchTree -> SearchTree -> Double
+score :: Given Config => SearchTree -> SearchTree -> Double
 score parent child = ratio child + correction parent child
 
 initialSearchTree :: GameState -> SearchTree
 initialSearchTree state = Node (Left state) 0 0 (makeChildrenS state)
 
--- モンテカルロ木探索を規定回数だけ実行して、最適な手を返します。
-search :: MonadRandom m => GameState -> m GameMove
+-- モンテカルロ木探索を規定回数だけ実行して、与えられたゲーム状況において最適と思われる手を返します。
+search :: (Given Config, MonadRandom m) => GameState -> m GameMove
 search state = make <$> iterateMontecarlo (initialSearchTree state)
   where
     make = snd . fromRight undefined . label . maximumBy (comparing ratio) . children
 
-searchWithRatio :: MonadRandom m => GameState -> m (GameMove, Double)
+-- モンテカルロ木探索を規定回数だけ実行して、与えられたゲーム状況において最適と思われる手に加え、その選択の確信度を返します。
+-- 確信度は 0 以上 1 以下の数で、1 に近いほどその手を実行することでクリアできると確信していることを表します。
+searchWithRatio :: (Given Config, MonadRandom m) => GameState -> m (GameMove, Double)
 searchWithRatio state = make <$> iterateMontecarlo (initialSearchTree state)
   where
     make = (snd . fromRight undefined . label &&& ratio) . maximumBy (comparing ratio) . children
 
-iterateMontecarlo :: MonadRandom m => SearchTree -> m SearchTree
-iterateMontecarlo node = iterationList !! iterateSize
+iterateMontecarlo :: (Given Config, MonadRandom m) => SearchTree -> m SearchTree
+iterateMontecarlo node = iterationList !! iterateSize given
   where
     iterationList = iterate (montecarlo' =<<) $ return node
 
-montecarlo' :: MonadRandom m => SearchTree -> m SearchTree
+montecarlo' :: (Given Config, MonadRandom m) => SearchTree -> m SearchTree
 montecarlo' = (fst <$>) . montecarlo
 
 -- 指定されたノードからモンテカルロ木探索を 1 ステップ実行し、実行後のノードとプレイアウトの報酬値を返します。
-montecarlo :: MonadRandom m => SearchTree -> m (SearchTree, Double)
+montecarlo :: (Given Config, MonadRandom m) => SearchTree -> m (SearchTree, Double)
 montecarlo node@(Node label num accum children) =
   if null children
-    then if num < thresholdNum
+    then if num < thresholdNum given
       then montecarloPlayout node
       else montecarloExpand node
     else montecarloRecursion node
 
-montecarloPlayout :: MonadRandom m => SearchTree -> m (SearchTree, Double)
+montecarloPlayout :: (Given Config, MonadRandom m) => SearchTree -> m (SearchTree, Double)
 montecarloPlayout (Node label num accum _) = (makeNode &&& id) <$> playout label
   where
     makeNode reward = Node label (num + 1) (accum + reward) []
 
-montecarloExpand :: MonadRandom m => SearchTree -> m (SearchTree, Double) 
+montecarloExpand :: (Given Config, MonadRandom m) => SearchTree -> m (SearchTree, Double) 
 montecarloExpand node@(Node label num accum _) = 
   if null children
     then montecarloLeaf node
@@ -95,13 +100,13 @@ montecarloExpand node@(Node label num accum _) =
     nextNode = Node label num accum children
     children = makeChildren label
 
-montecarloRecursion :: MonadRandom m => SearchTree -> m (SearchTree, Double)
+montecarloRecursion :: (Given Config, MonadRandom m) => SearchTree -> m (SearchTree, Double)
 montecarloRecursion node@(Node label num accum children) = (makeNode &&& snd) <$> montecarlo child
   where
     makeNode (nextChild, reward) = Node label (num + 1) (accum + reward) (update index nextChild children)
     (index, child) = maximumBy' (comparing $ score node) children
 
-montecarloLeaf :: MonadRandom m => SearchTree -> m (SearchTree, Double)
+montecarloLeaf :: (Given Config, MonadRandom m) => SearchTree -> m (SearchTree, Double)
 montecarloLeaf node@(Node label num accum _) = return (nextNode, reward)
   where
     nextNode = Node label (num + 1) (accum + reward) []

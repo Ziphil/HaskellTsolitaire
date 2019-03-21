@@ -7,7 +7,8 @@ import Data.Either
 import Data.List
 import Data.Tsuro
 import Data.Tsuro.Read
-import Data.Tsuro.Search.Montecarlo
+import Data.Tsuro.Search.Core
+import qualified Data.Tsuro.Search.Montecarlo as Montecarlo
 import Data.Tsuro.Show
 import System.Console.Pretty
 import System.IO
@@ -67,7 +68,7 @@ inputGameMove game = do
       flushStrLn $ colorMessage $ "@ Possible moves: " ++ unwords (map showRec $ possibleMoves game)
       inputGameMove game
     ":s" -> do
-      (move, ratio) <- searchWithRatio $ fromRight undefined (gameStateOf game)
+      (move, ratio) <- runSearchWithRatio Montecarlo.defaultConfig $ fromRight undefined (gameStateOf game)
       flushStrLn $ colorMessage $ "@ Suggested move: " ++ showRec move ++ " (" ++ printf "%.2f" (ratio * 100) ++ "%)"
       inputGameMove game
     _ -> case readRec input of
