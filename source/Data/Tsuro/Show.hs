@@ -39,19 +39,20 @@ instance ShowRich Tile where
 instance ShowRich TilePos where
   showRich (x, y) = show (y + 1) ++ ["ABCDEF" !! x]
 
+showRichRow :: Int -> Tiles -> String
+showRichRow y (Tiles tiles) = interpose "[ " " ]" $ unwords rowTiles
+  where
+    rowTiles = map (showRich' . (tiles !) . (, y)) [0 .. boardSize - 1]
+    showRich' = maybe " . " (colorTile . padl 3 ' ' . showRich)
+
 instance ShowRich Tiles where
-  showRich (Tiles tiles) = wholeString
-    where 
-      wholeString = intercalate "\n" $ map rowString boardList
-      rowString y = interpose "[ " " ]" $ unwords $ rowList y
-      rowList y = map (showRich' . (tiles !) . (, y)) boardList
-      showRich' = maybe " . " (colorTile . padl 3 ' ' . showRich)
-      boardList = [0 .. boardSize - 1]
+  showRich tiles@(Tiles rawRiles) = intercalate "\n" $ map (flip showRichRow tiles) [0 .. boardSize - 1]
+
+instance ShowRich StonePos where
+  showRich (tilePos, edge) = showRich tilePos ++ showRich edge
 
 instance ShowRich [StonePos] where
-  showRich stones = unwords $ map showRich' stones
-    where
-      showRich' (tilePos, edge) = showRich tilePos ++ showRich edge
+  showRich stones = unwords $ map showRich stones
 
 instance ShowRich Board where
   showRich (Board tiles _ _ stones) = showRich tiles ++ " " ++ showRich stones
@@ -68,5 +69,4 @@ instance ShowRich GameMove where
 instance ShowRich Game where
   showRich (Game board hands) = turnString ++ "\n" ++ showRich board
     where
-      turnString = colorTurn $ "Turn " ++ show turn
-      turn = tileSize - length hands + 1
+      turnString = colorTurn $ "Turn " ++ show (tileSize - length hands + 1)
