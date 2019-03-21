@@ -98,7 +98,7 @@ montecarloExpand node@(Node label num accum _) =
 montecarloRecursion :: MonadRandom m => SearchTree -> m (SearchTree, Double)
 montecarloRecursion node@(Node label num accum children) = (makeNode &&& snd) <$> montecarlo child
   where
-    makeNode (tree, reward) = Node label (num + 1) (accum + reward) (update index tree children)
+    makeNode (nextChild, reward) = Node label (num + 1) (accum + reward) (update index nextChild children)
     (index, child) = maximumBy' (comparing $ score node) children
 
 montecarloLeaf :: MonadRandom m => SearchTree -> m (SearchTree, Double)
