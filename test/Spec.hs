@@ -68,6 +68,7 @@ overTest = it "reports that the game is over when the next tile cannot be put" $
 wholePlayTest :: SpecWith (Arg Expectation)
 wholePlayTest = it "" $ do
   possibleMoves <$> game `shouldBe` Right [((2, 1), Clock)]
+  isOver <$> game `shouldBe` Right False
   isCleared <$> finalGame `shouldBe` Right True
     where
       firstGame = createGame [31, 25, 34, 30, 24, 7, 28, 33, 26, 2, 18, 5, 14, 32, 17, 21, 16, 0, 19, 6, 8, 10, 13, 23, 27, 3, 20, 9, 11, 15, 1, 12, 4, 22, 29]
