@@ -23,4 +23,4 @@ simulate :: IO ()
 simulate = putStrLn . makeString =<< result
   where
     makeString ((game, record), status) = show status ++ ": " ++ showRec record ++ " -> " ++ either (const "") (show . number) (nextHand game) ++ "\n" ++ showRec game
-    result = Search.simulate Montecarlo.search  =<< initialGame
+    result = Search.simulate' Montecarlo.search =<< initialGame

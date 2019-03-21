@@ -5,30 +5,35 @@ module Data.Tsuro.Search.Core where
 
 import Control.Arrow
 import Data.Either
+import Data.Functor.Identity
 import Data.Tsuro
 
 
 data SimulateStatus = Success | Failure
   deriving (Eq, Show)
 
-type Search m = GameState -> m GameMove
+type Search = GameState -> GameMove
+type RandomSearch m = GameState -> m GameMove
 
 type Record = [TileMove]
 type SearchResult = (Game, Record)
 
-simulate :: Monad m => Search m -> Game -> m (SearchResult, SimulateStatus)
-simulate search game = simulate' search (game, [])
+simulate :: Search -> Game -> (SearchResult, SimulateStatus)
+simulate search game = runIdentity $ simulate' (return . search) game
 
-simulate' :: Monad m => Search m -> SearchResult -> m (SearchResult, SimulateStatus)
-simulate' search result@(game, record) = 
+simulate' :: Monad m => RandomSearch m -> Game -> m (SearchResult, SimulateStatus)
+simulate' search game = simulateRecursion search (game, [])
+
+simulateRecursion :: Monad m => RandomSearch m -> SearchResult -> m (SearchResult, SimulateStatus)
+simulateRecursion search result@(game, record) = 
   case (isCleared game, isOver game) of
     (True, _) -> return (result, Success)
     (False, True) -> return (result, Failure)
-    (False, False) -> simulate' search =<< (fst &&& makeRecord) <$> simulateOnce search game
+    (False, False) -> simulateRecursion search =<< (fst &&& makeRecord) <$> simulateOnce search game
   where
     makeRecord (_, move) = record ++ [move]
 
-simulateOnce :: Monad m => Search m -> Game -> m (Game, TileMove)
+simulateOnce :: Monad m => RandomSearch m -> Game -> m (Game, TileMove)
 simulateOnce search game = (makeGame &&& makeTileMove) <$> search state
   where
     makeTileMove move = tileMoveOf (hand state) move
