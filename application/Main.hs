@@ -20,7 +20,7 @@ profile = move >> return ()
     move = Montecarlo.search =<< fromRight undefined . gameStateOf <$> initialGame
 
 simulate :: IO ()
-simulate = putStrLn . makeString =<< simulate' =<< initialGame
+simulate = putStrLn . makeString =<< result
   where
-    makeString ((_, record), status) = show status ++ ": " ++ showRec record
-    simulate' = Search.simulate Montecarlo.search
+    makeString ((game, record), status) = show status ++ ": " ++ showRec record ++ " -> " ++ either (const "") (show . number) (nextHand game) ++ "\n" ++ showRec game
+    result = Search.simulate Montecarlo.search  =<< initialGame
