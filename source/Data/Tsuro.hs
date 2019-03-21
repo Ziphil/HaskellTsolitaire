@@ -140,17 +140,17 @@ rotatedTiles tile@(Tile number _) = map (Tile number) $ distinctRotations tile
 type TilePos = (Int, Int)
 type StonePos = (TilePos, Edge)
 
-data InvalidMove = OutOfBoard | TileAlreadyPut | DetachedTilePos | NoNextHand
+data InvalidKind = OutOfBoard | TileAlreadyPut | DetachedTilePos | NoNextHand
   deriving (Eq, Show)
 
-type TsuroMaybe = Either InvalidMove
+type WithInvalid = Either InvalidKind
 
 boardSize :: Int
 boardSize = 6
 
 -- 指定した方向に隣接する位置を返します。
 -- 指定した方向が盤面外の場合は、OutOfBoard を返します。
-adjacent :: Rotation -> TilePos -> TsuroMaybe TilePos
+adjacent :: Rotation -> TilePos -> WithInvalid TilePos
 adjacent direction (x, y) =
   make $ case direction of
     None -> (y > 0, (x, y - 1))
@@ -177,7 +177,7 @@ emptyTiles = Tiles $ array tilePosBounds $ map (, Nothing) wholeTilePoss
 -- 例えば、横に隣り合う 2 つのマスの間の上側は、左側のマスから見て RightTop の位置ですが、右側のマスから見て LeftTop の位置でもあります。
 -- このように、見た目では同じ場所でも駒位置としては 2 種類の表現があり、この関数は自身とは別のもう一方の表現を返します。
 -- 駒位置が盤面の縁を表している場合は、駒位置の表現は 1 種類しかあり得ないため、OutOfBoard を返します。
-switch :: StonePos -> TsuroMaybe StonePos
+switch :: StonePos -> WithInvalid StonePos
 switch (pos, edge) =
   outFstA $ make $ case edge of
     TopLeft -> (None, BottomLeft)
@@ -211,7 +211,7 @@ updateTile pos tile (Tiles tiles) = Tiles $ tiles // [(pos, Just tile)]
 
 -- 盤面に置かれているタイルの通路に沿って、与えられた駒位置から可能な限り進んだときに到達する駒位置を返します。
 -- 進む途中で盤面外に出てしまう場合は、OutOfBoard を返します。
-advanceStone :: Tiles -> StonePos -> TsuroMaybe StonePos
+advanceStone :: Tiles -> StonePos -> WithInvalid StonePos
 advanceStone (Tiles tiles) (tilePos, edge) =
   case tiles ! tilePos of
     Nothing -> Right (tilePos, edge)
@@ -250,7 +250,7 @@ type TileMove = (TilePos, Tile)
 -- 指定された位置にすでにタイルが置かれている場合は、新たにタイルを置くことはできないので、TileAlreadyPut を返します。
 -- また、指定された位置が何らかの駒と隣接していない場合は、ルール上その位置にタイルを置くことはできないので、DetachedTilePos を返します。
 -- この関数単独では駒を動かしません。
-putTile :: TileMove -> Board -> TsuroMaybe Board
+putTile :: TileMove -> Board -> WithInvalid Board
 putTile (pos, tile) board@(Board tiles remainingTiles stones) =
   unless isPosEmpty (Left TileAlreadyPut) >> unless isPosAdjacentStone (Left DetachedTilePos) >> Right nextBoard
     where
@@ -261,7 +261,7 @@ putTile (pos, tile) board@(Board tiles remainingTiles stones) =
 
 -- 現在の盤面に従って全ての駒を移動させ、その結果の盤面を返します。
 -- 進む途中で盤面外に出てしまうような駒が 1 つでもある場合は、OutOfBoard を返します。
-advanceStones :: Board -> TsuroMaybe Board
+advanceStones :: Board -> WithInvalid Board
 advanceStones (Board tiles remainingTiles stones) = Board tiles remainingTiles <$> mapM (advanceStone tiles) stones
 
 canAdvanceStones :: Board -> Bool
@@ -269,7 +269,7 @@ canAdvanceStones = isRight . advanceStones
 
 -- タイルを指定された位置に置き、さらにその後の盤面に従って全ての駒を移動させ、その結果の盤面を返します。
 -- 不可能な操作をしようとした場合は、その原因を示すエラー値を返します。
-putTileAndUpdate :: TileMove -> Board -> TsuroMaybe Board
+putTileAndUpdate :: TileMove -> Board -> WithInvalid Board
 putTileAndUpdate move = advanceStones <=< putTile move
 
 -- 指定された位置にタイルを置くことができるか確かめ、置けるならば True を返します。
@@ -314,11 +314,11 @@ createGame numbers =
 
 -- 次に置くべきタイルを返します。
 -- 全てのタイルを置き切っていて置くべきタイルが残っていない場合は、NoNextHand を返します。
-nextHand :: Game -> TsuroMaybe Tile
+nextHand :: Game -> WithInvalid Tile
 nextHand (Game _ []) = Left NoNextHand
 nextHand (Game _ (hand : _)) = Right hand
 
-laterHands :: Game -> TsuroMaybe [Tile]
+laterHands :: Game -> WithInvalid [Tile]
 laterHands (Game _ []) = Left NoNextHand
 laterHands (Game _ (_ : rest)) = Right rest
 
@@ -335,15 +335,15 @@ data GameState = GameState {board :: Board, hand :: Tile}
 
 -- ゲームからゲーム状況を取り出します。
 -- ゲームにクリアしていて次に置くべきタイルがない場合は NoNextHand を返します。
-gameStateOf :: Game -> TsuroMaybe GameState
+gameStateOf :: Game -> WithInvalid GameState
 gameStateOf game@(Game board _) = GameState board <$> nextHand game
 
-applyMove' :: GameMove -> GameState -> TsuroMaybe Board
+applyMove' :: GameMove -> GameState -> WithInvalid Board
 applyMove' move (GameState board hand) = putTileAndUpdate (tileMoveOf hand move) board
 
 -- 指定された位置に置くべきタイルを置きます。
 -- 不可能な操作をしようとした場合は、その原因を示すエラー値を返します。
-applyMove :: GameMove -> Game -> TsuroMaybe Game
+applyMove :: GameMove -> Game -> WithInvalid Game
 applyMove move game = make =<< applyMove' move =<< gameStateOf game
   where
     make board = Game board <$> laterHands game

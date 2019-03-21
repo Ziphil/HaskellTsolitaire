@@ -11,19 +11,19 @@ import Test.Hspec
 
 
 infixl 6 <@
-(<@) :: Board -> TileMove -> TsuroMaybe Board
+(<@) :: Board -> TileMove -> WithInvalid Board
 (<@) = flip putTileAndUpdate
 
 infixl 6 <<@
-(<<@) :: TsuroMaybe Board -> TileMove -> TsuroMaybe Board
+(<<@) :: WithInvalid Board -> TileMove -> WithInvalid Board
 (<<@) = flip $ (=<<) . putTileAndUpdate
 
 infixl 6 <@@
-(<@@) :: Game -> GameMove -> TsuroMaybe Game
+(<@@) :: Game -> GameMove -> WithInvalid Game
 (<@@) = flip applyMove
 
 infixl 6 <<@@
-(<<@@) :: TsuroMaybe Game -> GameMove -> TsuroMaybe Game
+(<<@@) :: WithInvalid Game -> GameMove -> WithInvalid Game
 (<<@@) = flip $ (=<<) . applyMove
 
 singleMoveTest :: SpecWith (Arg Expectation)
