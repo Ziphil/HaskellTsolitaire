@@ -4,6 +4,7 @@
 module Data.Tsuro.Search.Core where
 
 import Control.Arrow
+import Control.Monad.Random
 import Data.Either
 import Data.Functor.Identity
 import Data.Tsuro
@@ -41,3 +42,13 @@ simulateOnce search game = (makeGame &&& makeTileMove) <$> search state
     makeTileMove move = tileMoveOf (hand state) move
     makeGame move = fromRight (error "weird search") $ applyMove move game
     state = fromRight undefined $ gameStateOf game
+
+-- 与えられた探索アルゴリズムを用いて複数回ゲームをプレイし、成功率を計算します。
+measureRate :: MonadRandom m => Int -> Search -> m Double
+measureRate size search = measureRate' size (return . search)
+
+measureRate' :: MonadRandom m => Int -> RandomSearch m -> m Double
+measureRate' size search = calcRate . length . filter ((== Success) . snd) <$> results
+  where
+    results = replicateM size $ simulate' search =<< initialGame
+    calcRate successSize = (fromIntegral successSize) / (fromIntegral size)
