@@ -1,4 +1,4 @@
---
+{-# LANGUAGE TupleSections #-}
 
 
 module Data.Tsuro.Search.Core where
@@ -21,11 +21,11 @@ type SearchResult = (Game, Record)
 
 -- 与えられた探索アルゴリズムを用いて、クリアするか詰むかするまでゲームをプレイします。
 -- クリアしたか詰んだかの情報に加え、プレイ後のゲーム状況および棋譜を返します。
-simulate :: Search -> Game -> (SearchResult, SimulateStatus)
-simulate search game = runIdentity $ simulate' (return . search) game
+simulate :: MonadRandom m => Search -> m (SearchResult, SimulateStatus)
+simulate search = simulate' (return . search)
 
-simulate' :: Monad m => RandomSearch m -> Game -> m (SearchResult, SimulateStatus)
-simulate' search game = simulateRecursion search (game, [])
+simulate' :: MonadRandom m => RandomSearch m -> m (SearchResult, SimulateStatus)
+simulate' search = simulateRecursion search . (, []) =<< initialGame
 
 simulateRecursion :: Monad m => RandomSearch m -> SearchResult -> m (SearchResult, SimulateStatus)
 simulateRecursion search result@(game, record) = 
@@ -50,5 +50,5 @@ measureRate size search = measureRate' size (return . search)
 measureRate' :: MonadRandom m => Int -> RandomSearch m -> m Double
 measureRate' size search = calcRate . length . filter ((== Success) . snd) <$> results
   where
-    results = replicateM size $ simulate' search =<< initialGame
+    results = replicateM size $ simulate' search
     calcRate successSize = (fromIntegral successSize) / (fromIntegral size)
