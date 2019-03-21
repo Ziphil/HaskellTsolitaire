@@ -256,14 +256,14 @@ type TileMove = (TilePos, Tile)
 -- また、指定された位置が何らかの駒と隣接していない場合は、ルール上その位置にタイルを置くことはできないので、DetachedTilePos を返します。
 -- この関数単独では駒を動かしません。
 -- そのため、駒に隣接しているタイルのリストも更新しません。
-putTile :: TileMove -> Board -> WithInvalid Board
-putTile move@(pos, tile) board = unless isPosEmpty (Left TileAlreadyPut) >> unless isPosAdjacent (Left DetachedTilePos) >> putTileWithoutCheck move board
+putTileOnly :: TileMove -> Board -> WithInvalid Board
+putTileOnly move@(pos, _) board = unless isPosEmpty (Left TileAlreadyPut) >> unless isPosAdjacent (Left DetachedTilePos) >> putTileOnlyWithoutCheck move board
   where
     isPosEmpty = isEmpty pos board
     isPosAdjacent = isAdjacent pos board
 
-putTileWithoutCheck :: TileMove -> Board -> WithInvalid Board
-putTileWithoutCheck (pos, tile) (Board tiles remainingTiles adjacentPoss stones) = Right nextBoard
+putTileOnlyWithoutCheck :: TileMove -> Board -> WithInvalid Board
+putTileOnlyWithoutCheck (pos, tile) (Board tiles remainingTiles adjacentPoss stones) = Right nextBoard
   where
     nextBoard = Board nextTiles nextRemainingTiles adjacentPoss stones
     nextTiles = updateTile pos tile tiles
@@ -281,18 +281,18 @@ canAdvanceStones = isRight . advanceStones
 
 -- タイルを指定された位置に置き、さらにその後の盤面に従って全ての駒を移動させ、その結果の盤面を返します。
 -- 不可能な操作をしようとした場合は、その原因を示すエラー値を返します。
-putTileAndUpdate :: TileMove -> Board -> WithInvalid Board
-putTileAndUpdate move = advanceStones <=< putTile move
+putTile :: TileMove -> Board -> WithInvalid Board
+putTile move = advanceStones <=< putTileOnly move
 
-putTileAndUpdateWithoutCheck :: TileMove -> Board -> WithInvalid Board
-putTileAndUpdateWithoutCheck move = advanceStones <=< putTileWithoutCheck move
+putTileWithoutCheck :: TileMove -> Board -> WithInvalid Board
+putTileWithoutCheck move = advanceStones <=< putTileOnlyWithoutCheck move
 
 -- 指定された位置にタイルを置くことができるか確かめ、置けるならば True を返します。
 canPutTile :: TileMove -> Board -> Bool
-canPutTile = isRight .^ putTileAndUpdate
+canPutTile = isRight .^ putTile
 
 canPutTileWithoutCheck :: TileMove -> Board -> Bool
-canPutTileWithoutCheck = isRight .^ putTileAndUpdateWithoutCheck
+canPutTileWithoutCheck = isRight .^ putTileWithoutCheck
 
 -- 指定されたタイルを置ける位置が存在するか確かめ、存在するならば True を返します。
 canPutTileAnywhere :: Tile -> Board -> Bool
@@ -357,7 +357,7 @@ gameStateOf :: Game -> WithInvalid GameState
 gameStateOf game@(Game board _) = GameState board <$> nextHand game
 
 applyMove' :: GameMove -> GameState -> WithInvalid Board
-applyMove' move (GameState board hand) = putTileAndUpdate (tileMoveOf hand move) board
+applyMove' move (GameState board hand) = putTile (tileMoveOf hand move) board
 
 -- 指定された位置に置くべきタイルを置きます。
 -- 不可能な操作をしようとした場合は、その原因を示すエラー値を返します。
@@ -380,7 +380,7 @@ possibleMoves game = fromRight [] $ possibleMoves' <$> gameStateOf game
 possibleMovesAndBoards' :: GameState -> [(GameMove, Board)]
 possibleMovesAndBoards' (GameState board hand) = rights $ map make $ comb poss rotations
   where
-    make move = (move, ) <$> putTileAndUpdateWithoutCheck (tileMoveOf hand move) board
+    make move = (move, ) <$> putTileWithoutCheck (tileMoveOf hand move) board
     poss = adjacentPoss board
     rotations = distinctRotations hand
 

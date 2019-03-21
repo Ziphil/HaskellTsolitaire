@@ -13,11 +13,11 @@ import Ziphil.Util.Test
 
 infixl 6 <@
 (<@) :: Board -> TileMove -> WithInvalid Board
-(<@) = flip putTileAndUpdate
+(<@) = flip putTile
 
 infixl 6 <<@
 (<<@) :: WithInvalid Board -> TileMove -> WithInvalid Board
-(<<@) = flip $ (=<<) . putTileAndUpdate
+(<<@) = flip $ (=<<) . putTile
 
 infixl 6 <@@
 (<@@) :: Game -> GameMove -> WithInvalid Game
