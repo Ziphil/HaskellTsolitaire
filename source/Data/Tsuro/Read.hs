@@ -30,7 +30,7 @@ instance ReadRich TilePos where
   readRich string = guard (length string == 2) >> outA (parseX $ string !! 1, parseY $ string !! 0)
     where
       parseX char = elemIndex char "ABCDEF"
-      parseY char = guard (inRange (1, 6) $ digitToInt char) >> Just (digitToInt char - 1)
+      parseY char = guard (isDigit char) >> guard (inRange (1, 6) $ digitToInt char) >> Just (digitToInt char - 1)
 
 instance ReadRich GameMove where
   readRich string = guard (length string == 3) >> outA (readRich $ string !!& [0, 1], readRich $ string !!& [2])
