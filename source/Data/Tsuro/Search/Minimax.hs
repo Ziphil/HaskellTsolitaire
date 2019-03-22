@@ -59,7 +59,7 @@ minimaxRecursion depth (Node label children) = calc $ map (minimax (depth + 1)) 
     calc = either (const maximum) (const minimum) label
 
 evaluate :: Label -> Double
-evaluate label = either evaluateS (evaluateB . fst) label
+evaluate = either evaluateS (evaluateB . fst)
 
 evaluateS :: GameState -> Double
 evaluateS state = error "to be implemented"

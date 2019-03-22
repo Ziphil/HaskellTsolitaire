@@ -238,7 +238,7 @@ isEmpty :: TilePos -> Board -> Bool
 isEmpty tilePos (Board (Tiles tiles) _ _ _) = isNothing (tiles ! tilePos)
 
 isAdjacent' :: TilePos -> [StonePos] -> Bool
-isAdjacent' pos stones = any ((== pos) . fst) stones
+isAdjacent' pos = any ((== pos) . fst)
 
 -- 指定された位置が何らかの駒と隣接しているかどうか確かめ、隣接していれば True を返します。
 -- この関数が False を返すような位置には、ルール上タイルを置くことができません。

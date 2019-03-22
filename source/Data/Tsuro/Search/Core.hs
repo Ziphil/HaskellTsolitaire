@@ -49,4 +49,4 @@ measureRate :: (MonadRandom m, Search m s) => Int -> s -> m Double
 measureRate size search = calcRate . length . filter ((== Success) . snd) <$> results
   where
     results = replicateM size $ simulate search
-    calcRate successSize = (fromIntegral successSize) / (fromIntegral size)
+    calcRate successSize = fromIntegral successSize / fromIntegral size
