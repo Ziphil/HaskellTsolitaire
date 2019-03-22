@@ -1,7 +1,10 @@
 --
 
 
-module Data.Tsuro.Interface.Game where
+module Data.Tsuro.Interface.Game
+  ( start
+  )
+where
 
 import Data.Either
 import Data.List

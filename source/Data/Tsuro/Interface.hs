@@ -1,7 +1,10 @@
 --
 
 
-module Data.Tsuro.Interface where
+module Data.Tsuro.Interface
+  ( start
+  )
+where
 
 import qualified Data.Tsuro.Interface.Game as Game
 import qualified Data.Tsuro.Interface.Simulate as Simulate

@@ -2,7 +2,10 @@
 {-# LANGUAGE FlexibleInstances #-}
 
 
-module Data.Tsuro.Show where
+module Data.Tsuro.Show
+  ( ShowRich (..)
+  )
+where
 
 import Data.Array.IArray
 import Data.List

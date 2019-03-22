@@ -2,7 +2,51 @@
 {-# LANGUAGE TupleSections #-}
 
 
-module Data.Tsuro where
+module Data.Tsuro 
+  ( Rotation (..)
+  , Edge (..)
+  , Aisles (..)
+  , Symmetry (..)
+  , Tile (..)
+  , tileSize
+  , wholeTiles
+  , aislesOf
+  , symmetryOf
+  , normalize
+  , distinctRotations
+  , rotatedTiles
+  , TilePos
+  , StonePos
+  , InvalidKind (..)
+  , WithInvalid
+  , boardSize
+  , Tiles (..)
+  , wholeTilePoss
+  , emptyTiles
+  , Board (..)
+  , initialStones
+  , initialBoard
+  , usedTiles
+  , TileMove
+  , putTile
+  , canPutTile
+  , canPutTileAnywhere
+  , Game (..)
+  , initialHands', initialHands
+  , initialGame', initialGame
+  , createGame
+  , nextHand
+  , GameMove
+  , tileMoveOf
+  , GameState (..)
+  , gameStateOf
+  , applyMove', applyMove
+  , possibleMoves', possibleMoves
+  , possibleMovesAndBoards', possibleMovesAndGames
+  , isCleared
+  , isOver', isOver
+  )
+where
 
 import Control.Applicative
 import Control.Monad

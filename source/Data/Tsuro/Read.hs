@@ -1,7 +1,10 @@
 {-# LANGUAGE FlexibleInstances #-}
 
 
-module Data.Tsuro.Read where
+module Data.Tsuro.Read
+  ( ReadRich (..)
+  )
+where
 
 import Control.Monad
 import Data.Ix

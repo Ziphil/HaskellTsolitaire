@@ -3,7 +3,15 @@
 {-# LANGUAGE TupleSections #-}
 
 
-module Data.Tsuro.Search.Core where
+module Data.Tsuro.Search.Core
+  ( Search (..)
+  , SimulateStatus (..)
+  , Record
+  , SearchResult
+  , simulate
+  , measureRate
+  )
+where
 
 import Control.Arrow
 import Control.Monad.Random

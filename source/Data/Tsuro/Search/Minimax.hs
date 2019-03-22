@@ -3,7 +3,11 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 
 
-module Data.Tsuro.Search.Minimax where
+module Data.Tsuro.Search.Minimax
+  ( Config (..)
+  , defaultConfig
+  )
+where
 
 import Control.Arrow
 import Data.Either

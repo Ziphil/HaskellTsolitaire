@@ -1,7 +1,17 @@
 --
 
 
-module Data.Tsuro.Interface.Util where
+module Data.Tsuro.Interface.Util 
+  ( colorMessage
+  , colorError
+  , colorInput
+  , colorTile
+  , colorHand
+  , colorTurn
+  , flushStrLn
+  , flushStr
+  )
+where
 
 import System.Console.Pretty
 import System.IO

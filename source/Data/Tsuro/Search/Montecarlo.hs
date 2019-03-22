@@ -3,7 +3,11 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 
 
-module Data.Tsuro.Search.Montecarlo where
+module Data.Tsuro.Search.Montecarlo
+  ( Config (..)
+  , defaultConfig
+  )
+where
 
 import Control.Applicative
 import Control.Arrow

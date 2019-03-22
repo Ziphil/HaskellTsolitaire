@@ -3,7 +3,10 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 
 
-module Data.Tsuro.Interface.Simulate where
+module Data.Tsuro.Interface.Simulate
+  ( start
+  )
+where
 
 import Data.Tsuro
 import Data.Tsuro.Interface.Util
