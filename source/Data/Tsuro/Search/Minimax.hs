@@ -1,4 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 
 module Data.Tsuro.Search.Minimax where
@@ -9,9 +11,17 @@ import Data.List
 import Data.Ord
 import Data.Reflection
 import Data.Tsuro
+import Data.Tsuro.Search.Core
 
 
 data Config = Config {maxDepth :: Int}
+
+instance Monad m => Search m Config where
+  runSearch config = return . give config search
+  runSearchWithRatio config = return . give config searchWithRatio
+
+defaultConfig :: Config
+defaultConfig = error "to be implemented"
 
 type BoardLabel = (Board, GameMove)
 type Label = Either GameState BoardLabel
