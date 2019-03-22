@@ -29,7 +29,7 @@ start = do
       flushStrLn $ colorMessage $ "@ Record: " ++ showRich record
     Failure -> do
       flushStrLn $ colorMessage "@ Failed."
-      flushStrLn $ colorMessage $ "@ Record: " ++ showRich record ++ " " ++ either (const "") (show . number) (nextHand game) ++ "*"
+      flushStrLn $ colorMessage $ "@ Record: " ++ showRich record ++ " " ++ either (const "") (show . number) (nextHand game) ++ "/"
 
 inputSearch :: IO SomeSearch
 inputSearch = do
