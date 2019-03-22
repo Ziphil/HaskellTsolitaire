@@ -40,7 +40,7 @@ search state = make $ wholeGameTree state
 searchWithRatio :: Given Config => GameState -> (GameMove, Double)
 searchWithRatio state = make $ wholeGameTree state
   where
-    make = (snd . fromRight undefined . label . fst &&& snd) . maximumBy (comparing snd) . map (id &&& minimax 0) . children
+    make = first (snd . fromRight undefined . label) . maximumBy (comparing snd) . map (id &&& minimax 0) . children
 
 minimax :: Given Config => Int -> GameTree -> Double
 minimax depth node@(Node label children) = 
