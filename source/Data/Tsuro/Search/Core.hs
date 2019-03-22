@@ -28,7 +28,7 @@ type SearchResult = (Game, Record)
 simulate :: (MonadRandom m, Search m s) => s -> m (SearchResult, SimulateStatus)
 simulate search = simulateRecursion search . (, []) =<< initialGame
 
-simulateRecursion :: (MonadRandom m, Search m s) => s -> SearchResult -> m (SearchResult, SimulateStatus)
+simulateRecursion :: (Monad m, Search m s) => s -> SearchResult -> m (SearchResult, SimulateStatus)
 simulateRecursion search result@(game, record) = 
   case (isCleared game, isOver game) of
     (True, _) -> return (result, Success)
@@ -37,7 +37,7 @@ simulateRecursion search result@(game, record) =
   where
     makeRecord (_, move) = record ++ [move]
 
-simulateOnce :: (MonadRandom m, Search m s) => s -> Game -> m (Game, TileMove)
+simulateOnce :: (Monad m, Search m s) => s -> Game -> m (Game, TileMove)
 simulateOnce search game = (makeGame &&& makeTileMove) <$> runSearch search state
   where
     makeTileMove move = tileMoveOf (hand state) move
