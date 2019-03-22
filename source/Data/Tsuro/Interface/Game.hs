@@ -6,7 +6,7 @@ module Data.Tsuro.Interface.Game where
 import Data.Either
 import Data.List
 import Data.Tsuro
-import Data.Tsuro.Interface.Core
+import Data.Tsuro.Interface.Util
 import Data.Tsuro.Read
 import Data.Tsuro.Search.Core
 import qualified Data.Tsuro.Search.Montecarlo as Montecarlo

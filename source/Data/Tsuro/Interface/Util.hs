@@ -1,7 +1,7 @@
 --
 
 
-module Data.Tsuro.Interface.Core where
+module Data.Tsuro.Interface.Util where
 
 import System.Console.Pretty
 import System.IO
