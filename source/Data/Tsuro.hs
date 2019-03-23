@@ -36,6 +36,7 @@ module Data.Tsuro
   , initialGame', initialGame
   , createGame
   , nextHand
+  , changeNextHand
   , GameMove
   , tileMoveOf
   , GameState (..)
@@ -49,6 +50,7 @@ module Data.Tsuro
 where
 
 import Control.Applicative
+import Control.Arrow
 import Control.Monad
 import Control.Monad.Random
 import Data.Array.IArray
@@ -184,7 +186,7 @@ rotatedTiles tile@(Tile number _) = map (Tile number) $ distinctRotations tile
 type TilePos = (Int, Int)
 type StonePos = (TilePos, Edge)
 
-data InvalidKind = OutOfBoard | TileAlreadyPut | DetachedTilePos | NoNextHand
+data InvalidKind = OutOfBoard | TileAlreadyPut | DetachedTilePos | NoNextHand | TileNotRemaining
   deriving (Eq, Show)
 
 type WithInvalid = Either InvalidKind
@@ -383,6 +385,17 @@ nextHand (Game _ (hand : _)) = Right hand
 laterHands :: Game -> WithInvalid [Tile]
 laterHands (Game _ []) = Left NoNextHand
 laterHands (Game _ (_ : rest)) = Right rest
+
+-- 次に置くべきタイルを引数として与えられたタイルに強制的に変更し、ゲームを返します。
+-- 与えられたタイルがすでに盤面に置かれてしまっている場合は、それを次のタイルにはできないので、TileNotRemaining を返します。
+changeNextHand :: Tile -> Game -> WithInvalid Game
+changeNextHand tile (Game board hands) =
+  case findIndex ((== number tile) . number) hands of
+    Nothing -> Left TileNotRemaining
+    Just index -> Right $ Game board nextHands
+      where
+        nextHands = Tile (number tile) None : restHands
+        restHands = uncurry (++) $ second (drop 1) $ splitAt index hands
 
 rotateTile :: Rotation -> Tile -> Tile
 rotateTile rotation (Tile number _) = Tile number rotation
