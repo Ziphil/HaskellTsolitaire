@@ -68,7 +68,7 @@ inputGameMove game = do
         inputGameMove game
     ':' : 'c' : ' ' : rest -> case parseTile rest of
       Nothing -> do
-        flushStrLn $ colorError "@ Invalid input"
+        flushStrLn $ colorError "@ Invalid input."
         inputGameMove game
       Just tile -> case changeNextHand tile game of
         Left TileNotRemaining -> do
