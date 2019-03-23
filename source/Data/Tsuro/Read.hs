@@ -7,8 +7,8 @@ module Data.Tsuro.Read
 where
 
 import Control.Monad
-import Data.Ix
 import Data.Char
+import Data.Ix
 import Data.List
 import Data.Tsuro
 import Ziphil.Util.Core
