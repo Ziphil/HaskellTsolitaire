@@ -33,9 +33,6 @@ type Label = Either GameState BoardLabel
 data GameTree = Node {label :: Label, children :: [GameTree]}
   deriving (Eq, Show)
 
-wholeGameTree :: GameState -> GameTree
-wholeGameTree = error "to be implemented"
-
 search :: Given Config => GameState -> GameMove
 search state = make $ wholeGameTree state
   where
@@ -61,6 +58,25 @@ minimaxRecursion :: Given Config => Int -> GameTree -> Double
 minimaxRecursion depth (Node label children) = calc $ map (minimax (depth + 1)) children
   where
     calc = either (const maximum) (const minimum) label
+
+wholeGameTree :: GameState -> GameTree
+wholeGameTree state = makeNode $ Left state
+
+makeChildren :: Label -> [GameTree]
+makeChildren = either makeChildrenS (makeChildrenB . fst)
+
+makeNode :: Label -> GameTree
+makeNode label = Node label $ makeChildren label
+
+makeChildrenS :: GameState -> [GameTree]
+makeChildrenS state@(GameState board hand) = map makeNode' $ possibleMovesAndBoards' state
+  where
+    makeNode' (move, board) = makeNode $ Right (board, move)
+
+makeChildrenB :: Board -> [GameTree]
+makeChildrenB board = map makeNode' $ remainingTiles board
+  where
+    makeNode' tile = makeNode $ Left (GameState board tile)
 
 evaluate :: Label -> Double
 evaluate = either evaluateS (evaluateB . fst)
