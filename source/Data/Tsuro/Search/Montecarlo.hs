@@ -119,15 +119,15 @@ montecarloLeaf node@(Node label num accum _) = return (nextNode, reward)
     reward = either (const 0) (const 1) label
 
 makeChildren :: Label -> [SearchTree]
-makeChildren = either makeChildrenS makeChildrenB
+makeChildren = either makeChildrenS (makeChildrenB . fst)
 
 makeChildrenS :: GameState -> [SearchTree]
 makeChildrenS state@(GameState board hand) = map makeNode $ possibleMovesAndBoards' state
   where
     makeNode (move, board) = Node (Right (board, move)) 0 0 []
 
-makeChildrenB :: BoardLabel -> [SearchTree]
-makeChildrenB (board, _) = map makeNode $ remainingTiles board
+makeChildrenB :: Board -> [SearchTree]
+makeChildrenB board = map makeNode $ remainingTiles board
   where
     makeNode tile = Node (Left (GameState board tile)) 0 0 []
 
