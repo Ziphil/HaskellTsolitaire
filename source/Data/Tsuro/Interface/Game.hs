@@ -1,4 +1,5 @@
---
+{-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 
 module Data.Tsuro.Interface.Game
@@ -53,15 +54,28 @@ inputGameMove game = do
     ":p" -> do
       flushStrLn $ colorMessage $ "@ Possible moves: " ++ unwords (map showRich $ possibleMoves game)
       inputGameMove game
-    ":s" -> do
-      (move, ratio) <- runSearchWithRatio Montecarlo.defaultConfig $ fromRight undefined (gameStateOf game)
-      flushStrLn $ colorMessage $ "@ Suggested move: " ++ showRich move ++ " (" ++ printf "%.2f" (ratio * 100) ++ "%)"
-      inputGameMove game
+    ':' : 's' : rest -> case searchOf rest of
+      Nothing -> do
+        flushStrLn $ colorError "@ No such algorithm."
+        inputGameMove game
+      Just (SomeSearch search) -> do
+        (move, ratio) <- runSearchWithRatio search $ fromRight undefined (gameStateOf game)
+        flushStrLn $ colorMessage $ "@ Suggested move: " ++ showRich move ++ " (" ++ printf "%.2f" (ratio * 100) ++ "%)"
+        inputGameMove game
     _ -> case readRich input of
       Nothing -> do
         flushStrLn $ colorError "@ Invalid input. Specify the position and rotation in the form like '5FR' or '1BT'."
         inputGameMove game
       Just move -> return move
+
+data SomeSearch = forall s. Search IO s => SomeSearch s
+
+searchOf :: String -> Maybe SomeSearch
+searchOf string =
+  case string of
+    "m" -> Just $ SomeSearch Montecarlo.defaultConfig
+    "mf" -> Just $ SomeSearch (Montecarlo.Config 1000 4 3)
+    _ -> Nothing
 
 getNextGame :: Game -> IO Game
 getNextGame game = do
