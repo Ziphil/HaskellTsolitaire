@@ -37,7 +37,7 @@ inputSearch = do
   input <- getLine
   case input of
     "m" -> return $ SomeSearch Montecarlo.defaultConfig
-    "mf" -> return $ SomeSearch (Montecarlo.Config 1000 4 3)
+    "mf" -> return $ SomeSearch Montecarlo.fastConfig
     _ -> do
       flushStrLn $ colorError "@ No such algorithm."
       inputSearch

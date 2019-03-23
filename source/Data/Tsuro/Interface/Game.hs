@@ -87,7 +87,7 @@ parseSearch :: String -> Maybe SomeSearch
 parseSearch string =
   case string of
     "m" -> Just $ SomeSearch Montecarlo.defaultConfig
-    "mf" -> Just $ SomeSearch (Montecarlo.Config 1000 4 3)
+    "mf" -> Just $ SomeSearch Montecarlo.fastConfig
     _ -> Nothing
 
 parseTile :: String -> Maybe Tile
