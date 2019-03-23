@@ -58,7 +58,7 @@ inputGameMove game = do
     ":p" -> do
       flushStrLn $ colorMessage $ "@ Possible moves: " ++ unwords (map showRich $ possibleMoves game)
       inputGameMove game
-    ':' : 's' : rest -> case searchOf rest of
+    ':' : 's' : rest -> case parseSearch rest of
       Nothing -> do
         flushStrLn $ colorError "@ No such algorithm."
         inputGameMove game
@@ -83,8 +83,8 @@ inputGameMove game = do
 
 data SomeSearch = forall s. Search IO s => SomeSearch s
 
-searchOf :: String -> Maybe SomeSearch
-searchOf string =
+parseSearch :: String -> Maybe SomeSearch
+parseSearch string =
   case string of
     "m" -> Just $ SomeSearch Montecarlo.defaultConfig
     "mf" -> Just $ SomeSearch (Montecarlo.Config 1000 4 3)
