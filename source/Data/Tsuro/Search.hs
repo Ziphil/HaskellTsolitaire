@@ -19,7 +19,6 @@ where
 import Control.Arrow
 import Control.Monad.Random
 import Data.Either
-import Data.Functor.Identity
 import Data.Tsuro.Core
 import Data.Tsuro.Search.Class
 import qualified Data.Tsuro.Search.Montecarlo as Montecarlo
