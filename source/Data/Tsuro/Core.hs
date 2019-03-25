@@ -9,6 +9,7 @@ module Data.Tsuro.Core
   , Edge (..)
   , Aisles (..)
   , Symmetry (..)
+  , AisleShape (..)
   , Tile (..)
   , tileSize
   , wholeTiles
@@ -148,6 +149,9 @@ symmetryArray :: Array Int Symmetry
 symmetryArray = force $ array (0, tileSize - 1) $ map make [0 .. tileSize - 1]
   where
     make number = (number, calcSymmetry $ aisleArray ! (number, None))
+
+data AisleShape = Kuru | ZusaLeft | ZusaRight | Guwa | NyoroLeft | NyoroRight | Shaki | Kuwa
+  deriving (Eq, Show)
 
 data Tile = Tile {number :: Int, rotation :: Rotation}
   deriving (Eq, Show)
