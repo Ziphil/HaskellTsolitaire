@@ -15,7 +15,7 @@ import Data.List
 import Data.Ord
 import Data.Reflection
 import Data.Tsuro.Core
-import Data.Tsuro.Search.Core
+import Data.Tsuro.Search.Class
 
 
 data Config = Config {maxDepth :: Int}

@@ -18,7 +18,7 @@ import Data.List
 import Data.Ord
 import Data.Reflection
 import Data.Tsuro.Core
-import Data.Tsuro.Search.Core
+import Data.Tsuro.Search.Class
 import System.Random
 import Ziphil.Util.List
 import Ziphil.Util.Random

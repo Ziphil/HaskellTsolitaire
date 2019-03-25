@@ -1,10 +1,13 @@
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TupleSections #-}
 
 
-module Data.Tsuro.Search.Core
+module Data.Tsuro.Search
   ( Search (..)
+  , SomeSearch (..)
+  , parseSearch
   , SimulateStatus (..)
   , Record
   , SearchResult
@@ -18,12 +21,19 @@ import Control.Monad.Random
 import Data.Either
 import Data.Functor.Identity
 import Data.Tsuro.Core
+import Data.Tsuro.Search.Class
+import qualified Data.Tsuro.Search.Montecarlo as Montecarlo
 import Ziphil.Util.Core
 
 
-class Search m s where
-  runSearch :: s -> GameState -> m GameMove
-  runSearchWithRatio :: s -> GameState -> m (GameMove, Double)
+data SomeSearch = forall s. Search IO s => SomeSearch s
+
+parseSearch :: String -> Maybe SomeSearch
+parseSearch string =
+  case string of
+    "m" -> Just $ SomeSearch Montecarlo.defaultConfig
+    "mf" -> Just $ SomeSearch Montecarlo.fastConfig
+    _ -> Nothing
 
 data SimulateStatus = Success | Failure
   deriving (Eq, Show)

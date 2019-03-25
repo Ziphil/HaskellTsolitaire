@@ -1,6 +1,4 @@
-{-# LANGUAGE ExistentialQuantification #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
+--
 
 
 module Data.Tsuro.Interface.Simulate
@@ -11,11 +9,8 @@ where
 import Data.Tsuro.Core
 import Data.Tsuro.Interface.Show
 import Data.Tsuro.Interface.Util
-import Data.Tsuro.Search.Core
-import qualified Data.Tsuro.Search.Montecarlo as Montecarlo
+import Data.Tsuro.Search
 
-
-data SomeSearch = forall s. Search IO s => SomeSearch s
 
 start :: IO ()
 start = do
@@ -35,9 +30,8 @@ inputSearch :: IO SomeSearch
 inputSearch = do
   flushStr $ colorInput "<?> Algorithm -> "
   input <- getLine
-  case input of
-    "m" -> return $ SomeSearch Montecarlo.defaultConfig
-    "mf" -> return $ SomeSearch Montecarlo.fastConfig
-    _ -> do
+  case parseSearch input of
+    Just search -> return search
+    Nothing -> do
       flushStrLn $ colorError "@ No such algorithm."
       inputSearch

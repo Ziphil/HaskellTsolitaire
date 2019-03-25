@@ -1,5 +1,4 @@
-{-# LANGUAGE ExistentialQuantification #-}
-{-# LANGUAGE FlexibleContexts #-}
+--
 
 
 module Data.Tsuro.Interface.Game
@@ -16,8 +15,7 @@ import Data.Tsuro.Core
 import Data.Tsuro.Interface.Read
 import Data.Tsuro.Interface.Show
 import Data.Tsuro.Interface.Util
-import Data.Tsuro.Search.Core
-import qualified Data.Tsuro.Search.Montecarlo as Montecarlo
+import Data.Tsuro.Search
 import System.Console.Pretty
 import System.IO
 import System.Random
@@ -80,15 +78,6 @@ inputGameMove game = do
         flushStrLn $ colorError "@ Invalid input. Specify the position and rotation in the form like '5FR' or '1BT'."
         inputGameMove game
       Just move -> return $ Right move
-
-data SomeSearch = forall s. Search IO s => SomeSearch s
-
-parseSearch :: String -> Maybe SomeSearch
-parseSearch string =
-  case string of
-    "m" -> Just $ SomeSearch Montecarlo.defaultConfig
-    "mf" -> Just $ SomeSearch Montecarlo.fastConfig
-    _ -> Nothing
 
 parseTile :: String -> Maybe Tile
 parseTile string = make =<< readMaybe string
