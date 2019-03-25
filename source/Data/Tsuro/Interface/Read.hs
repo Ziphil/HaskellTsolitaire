@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 
 
-module Data.Tsuro.Read
+module Data.Tsuro.Interface.Read
   ( ReadRich (..)
   )
 where
@@ -10,7 +10,7 @@ import Control.Monad
 import Data.Char
 import Data.Ix
 import Data.List
-import Data.Tsuro
+import Data.Tsuro.Core
 import Ziphil.Util.Core
 import Ziphil.Util.List
 import Ziphil.Util.Monad

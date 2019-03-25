@@ -2,14 +2,14 @@
 {-# LANGUAGE FlexibleInstances #-}
 
 
-module Data.Tsuro.Show
+module Data.Tsuro.Interface.Show
   ( ShowRich (..)
   )
 where
 
 import Data.Array.IArray
 import Data.List
-import Data.Tsuro
+import Data.Tsuro.Core
 import Data.Tsuro.Interface.Util
 import System.Console.Pretty
 import Ziphil.Util.List

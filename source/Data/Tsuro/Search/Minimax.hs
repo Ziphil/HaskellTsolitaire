@@ -14,7 +14,7 @@ import Data.Either
 import Data.List
 import Data.Ord
 import Data.Reflection
-import Data.Tsuro
+import Data.Tsuro.Core
 import Data.Tsuro.Search.Core
 
 

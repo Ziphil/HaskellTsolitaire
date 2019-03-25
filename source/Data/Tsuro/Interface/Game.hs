@@ -12,12 +12,12 @@ import Data.Char
 import Data.Either
 import Data.Ix
 import Data.List
-import Data.Tsuro
+import Data.Tsuro.Core
+import Data.Tsuro.Interface.Read
+import Data.Tsuro.Interface.Show
 import Data.Tsuro.Interface.Util
-import Data.Tsuro.Read
 import Data.Tsuro.Search.Core
 import qualified Data.Tsuro.Search.Montecarlo as Montecarlo
-import Data.Tsuro.Show
 import System.Console.Pretty
 import System.IO
 import System.Random

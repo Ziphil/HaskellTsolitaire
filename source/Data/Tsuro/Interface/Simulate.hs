@@ -8,11 +8,11 @@ module Data.Tsuro.Interface.Simulate
   )
 where
 
-import Data.Tsuro
+import Data.Tsuro.Core
+import Data.Tsuro.Interface.Show
 import Data.Tsuro.Interface.Util
 import Data.Tsuro.Search.Core
 import qualified Data.Tsuro.Search.Montecarlo as Montecarlo
-import Data.Tsuro.Show
 
 
 data SomeSearch = forall s. Search IO s => SomeSearch s
