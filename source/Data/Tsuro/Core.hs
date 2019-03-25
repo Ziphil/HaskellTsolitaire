@@ -94,8 +94,8 @@ rotateAisles = outAisles . Set.map . bimapSame . rotateEdge
   where
     outAisles func (Aisles set) = Aisles (func set)
 
-aisleArray :: Array TileInfo Aisles
-aisleArray = force $ array ((0, None), (34, Anticlock)) $ map make $ comb dataList allEnums
+aislesArray :: Array TileInfo Aisles
+aislesArray = force $ array ((0, None), (34, Anticlock)) $ map make $ comb dataList allEnums
   where
     make ((number, list), rotation) = ((number, rotation), rotateAisles rotation $ makeAisles list)
     makeAisles = Aisles . Set.fromList . concatMap (take 2 . iterate swap)
@@ -148,7 +148,7 @@ calcSymmetry aisles = maybe Asymmetric snd $ find (check . fst) [(Clock, Tetrad)
 symmetryArray :: Array Int Symmetry
 symmetryArray = force $ array (0, tileSize - 1) $ map make [0 .. tileSize - 1]
   where
-    make number = (number, calcSymmetry $ aisleArray ! (number, None))
+    make number = (number, calcSymmetry $ aislesArray ! (number, None))
 
 data AisleShape = Kuru | ZusaLeft | ZusaRight | Guwa | NyoroLeft | NyoroRight | Shaki | Kuwa
   deriving (Eq, Show)
@@ -163,7 +163,7 @@ wholeTiles :: [Tile]
 wholeTiles = map (flip Tile None) [0 .. tileSize - 1]
 
 aislesOf :: Tile -> Aisles
-aislesOf (Tile number rotation) = aisleArray ! (number, rotation)
+aislesOf (Tile number rotation) = aislesArray ! (number, rotation)
 
 symmetryOf :: Tile -> Symmetry
 symmetryOf (Tile number _) = symmetryArray ! number
@@ -246,7 +246,7 @@ switch (pos, edge) =
     make (direction, edge) = (adjacent direction pos, edge)
 
 calcOpposite :: (TileInfo, Edge) -> Edge
-calcOpposite (info, edge) = snd $ fromJust $ find ((== edge) . fst) (rawAisles $ aisleArray ! info)
+calcOpposite (info, edge) = snd $ fromJust $ find ((== edge) . fst) (rawAisles $ aislesArray ! info)
 
 oppositeArray :: Array (TileInfo, Edge) Edge
 oppositeArray = force $ array bounds $ map make $ comb (comb [0 .. tileSize - 1] allEnums) allEnums
