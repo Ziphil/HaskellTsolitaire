@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE TupleSections #-}
 
@@ -51,6 +53,7 @@ where
 
 import Control.Applicative
 import Control.Arrow
+import Control.DeepSeq
 import Control.Monad
 import Control.Monad.Random
 import Data.Array.IArray
@@ -61,6 +64,7 @@ import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as Set
 import Data.Tuple
+import GHC.Generics
 import System.Random
 import Ziphil.Util.Core
 import Ziphil.Util.List
@@ -69,10 +73,10 @@ import Ziphil.Util.Random
 
 
 data Rotation = None | Clock | Inverse | Anticlock
-  deriving (Eq, Ord, Ix, Enum, Show)
+  deriving (Eq, Ord, Ix, Enum, Generic, NFData, Show)
 
 data Edge = TopLeft | TopRight | RightTop | RightBottom | BottomRight | BottomLeft | LeftBottom | LeftTop
-  deriving (Eq, Ord, Ix, Enum, Show)
+  deriving (Eq, Ord, Ix, Enum, Generic, NFData, Show)
 
 rotateEdge :: Rotation -> Edge -> Edge
 rotateEdge None = id
@@ -80,7 +84,7 @@ rotateEdge Clock = toEnum . (#% 8) . (+ 2) . fromEnum
 rotateEdge rotation = rotateEdge (pred rotation) . rotateEdge Clock
 
 newtype Aisles = Aisles {rawAisles :: Set (Edge, Edge)}
-  deriving (Eq, Show)
+  deriving (Eq, Generic, NFData, Show)
 
 type TileInfo = (Int, Rotation)
 
@@ -90,7 +94,7 @@ rotateAisles = outAisles . Set.map . bimapSame . rotateEdge
     outAisles func (Aisles set) = Aisles (func set)
 
 aisleArray :: Array TileInfo Aisles
-aisleArray = array ((0, None), (34, Anticlock)) $ map make $ comb dataList allEnums
+aisleArray = force $ array ((0, None), (34, Anticlock)) $ map make $ comb dataList allEnums
   where
     make ((number, list), rotation) = ((number, rotation), rotateAisles rotation $ makeAisles list)
     makeAisles = Aisles . Set.fromList . concatMap (take 2 . iterate swap)
@@ -133,7 +137,7 @@ aisleArray = array ((0, None), (34, Anticlock)) $ map make $ comb dataList allEn
       ]
 
 data Symmetry = Asymmetric | Dyad | Tetrad
-  deriving (Eq, Show)
+  deriving (Eq, Show, Generic, NFData)
 
 calcSymmetry :: Aisles -> Symmetry
 calcSymmetry aisles = maybe Asymmetric snd $ find (check . fst) [(Clock, Tetrad), (Inverse, Dyad)]
@@ -141,7 +145,7 @@ calcSymmetry aisles = maybe Asymmetric snd $ find (check . fst) [(Clock, Tetrad)
     check = (== aisles) . flip rotateAisles aisles
 
 symmetryArray :: Array Int Symmetry
-symmetryArray = array (0, tileSize - 1) $ map make [0 .. tileSize - 1]
+symmetryArray = force $ array (0, tileSize - 1) $ map make [0 .. tileSize - 1]
   where
     make number = (number, calcSymmetry $ aisleArray ! (number, None))
 
@@ -241,7 +245,7 @@ calcOpposite :: (TileInfo, Edge) -> Edge
 calcOpposite (info, edge) = snd $ fromJust $ find ((== edge) . fst) (rawAisles $ aisleArray ! info)
 
 oppositeArray :: Array (TileInfo, Edge) Edge
-oppositeArray = array bounds $ map make $ comb (comb [0 .. tileSize - 1] allEnums) allEnums
+oppositeArray = force $ array bounds $ map make $ comb (comb [0 .. tileSize - 1] allEnums) allEnums
   where
     make info = (info, calcOpposite info)
     bounds = (((0, None), TopLeft), ((tileSize - 1, Anticlock), LeftTop))
