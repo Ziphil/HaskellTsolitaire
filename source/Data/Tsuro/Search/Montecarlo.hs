@@ -65,6 +65,9 @@ correction parent child =
 score :: Given Config => SearchTree -> SearchTree -> Double
 score parent child = ratio child + extra child + correction parent child
 
+scoreWithoutCorrection :: SearchTree -> SearchTree -> Double
+scoreWithoutCorrection _ child = ratio child + extra child
+
 initialSearchTree :: Given Config => GameState -> SearchTree
 initialSearchTree state = Node (Left state) 0 0 0 (makeChildrenS state)
 
@@ -72,14 +75,14 @@ initialSearchTree state = Node (Left state) 0 0 0 (makeChildrenS state)
 search :: (Given Config, MonadRandom m) => GameState -> m GameMove
 search state = make <$> iterateMontecarlo (initialSearchTree state)
   where
-    make = snd . fromRight undefined . label . maximumBy (comparing ratio) . children
+    make node = snd $ fromRight undefined $ label $ maximumBy (comparing $ scoreWithoutCorrection node) $ children node
 
 -- モンテカルロ木探索を規定回数だけ実行して、与えられたゲーム状況において最適と思われる手に加え、その選択の確信度を返します。
 -- 確信度は 0 以上 1 以下の数で、1 に近いほどその手を実行することでクリアできると確信していることを表します。
 searchWithRatio :: (Given Config, MonadRandom m) => GameState -> m (GameMove, Double)
 searchWithRatio state = make <$> iterateMontecarlo (initialSearchTree state)
   where
-    make = (snd . fromRight undefined . label &&& ratio) . maximumBy (comparing ratio) . children
+    make node = (snd . fromRight undefined . label &&& ratio) $ maximumBy (comparing $ scoreWithoutCorrection node) $ children node
 
 iterateMontecarlo :: (Given Config, MonadRandom m) => SearchTree -> m SearchTree
 iterateMontecarlo node = iterationList !! iterateSize given
@@ -127,8 +130,35 @@ montecarloLeaf node@(Node label num accum extra _) = return (nextNode, reward)
 makeChildren :: Given Config => Label -> [SearchTree]
 makeChildren = either makeChildrenS (makeChildrenB . fst)
 
+outerStonePoss :: [StonePos]
+outerStonePoss = (tops ++ rights ++ bottoms ++ lefts) \\ initialStones
+  where
+    tops = comb (map (, 0) [0 .. boardSize - 1]) [TopLeft, TopRight]
+    rights = comb (map (boardSize - 1, ) [0 .. boardSize - 1]) [RightTop, RightBottom]
+    bottoms = comb (map (, boardSize - 1) [0 .. boardSize - 1]) [BottomRight, BottomLeft]
+    lefts = comb (map (0, ) [0 .. boardSize - 1]) [LeftBottom, LeftTop]
+
+-- 与えられた位置が盤面の外周にどれだけ近いかを返します。
+-- 具体的には、盤面の中央にある位置であれば 0 を返し、盤面の外周に向かって移動するにつれて 1 ずつ増加する整数を返します。
+shallowness :: TilePos -> Int
+shallowness (x, y) = (boardSize - 1) #/ 2 - min x' y'
+  where
+    x' = min x (boardSize - x - 1)
+    y' = min y (boardSize - y - 1)
+
+calcEachExtra :: Given Config => Board -> StonePos -> Int
+calcEachExtra (Board tiles _ _ _) stonePos =
+  case advanceStone tiles stonePos of
+    Left _ -> (boardSize - 1) #/ 2 + 3
+    Right (tilePos, _) -> shallowness tilePos
+
 calcExtra :: Given Config => Board -> Double
-calcExtra (Board tiles _ _ _) = 0
+calcExtra board = 
+  if shallownessCoeff given == 0
+    then 0
+    else fromIntegral shallownessSum * shallownessCoeff given
+  where
+    shallownessSum = sum $ map (calcEachExtra board) outerStonePoss
 
 makeChildrenS :: Given Config => GameState -> [SearchTree]
 makeChildrenS state@(GameState board hand) = map makeNode $ possibleMovesAndBoards' state
