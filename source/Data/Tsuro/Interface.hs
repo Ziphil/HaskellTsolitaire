@@ -16,21 +16,18 @@ import System.IO
 
 start :: IO ()
 start = do
-  mode <- inputMode
+  func <- inputMode
   flushStrLn ""
-  case mode of
-    "g" -> Game.start
-    "s" -> Simulate.start
-    "m" -> MeasureRate.start
+  func
 
-inputMode :: IO String
+inputMode :: IO (IO ())
 inputMode = do
   flushStr $ colorInput "<?> Mode -> "
   input <- getLine
   case input of
-    "g" -> return "g"
-    "s" -> return "s"
-    "m" -> return "m"
+    "g" -> return Game.start
+    "s" -> return Simulate.start
+    "m" -> return MeasureRate.start
     _ -> do
       flushStrLn $ colorError "@ No such mode."
       inputMode
