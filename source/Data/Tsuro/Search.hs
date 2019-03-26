@@ -31,7 +31,9 @@ parseSearch :: String -> Maybe SomeSearch
 parseSearch string =
   case string of
     "m" -> Just $ SomeSearch Montecarlo.defaultConfig
+    "mn" -> Just $ SomeSearch Montecarlo.defaultConfigWithoutExtra
     "mf" -> Just $ SomeSearch Montecarlo.fastConfig
+    "mfn" -> Just $ SomeSearch Montecarlo.fastConfigWithoutExtra
     _ -> Nothing
 
 data SimulateStatus = Success | Failure

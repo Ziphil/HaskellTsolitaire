@@ -7,7 +7,9 @@
 module Data.Tsuro.Search.Montecarlo
   ( Config (..)
   , defaultConfig
+  , defaultConfigWithoutExtra
   , fastConfig
+  , fastConfigWithoutExtra
   )
 where
 
@@ -33,10 +35,16 @@ instance MonadRandom m => Search m Config where
   runSearchWithRatio config = give config searchWithRatio
 
 defaultConfig :: Config
-defaultConfig = Config 10000 5 3 0.05
+defaultConfig = Config 10000 5 3 0.025
+
+defaultConfigWithoutExtra :: Config
+defaultConfigWithoutExtra = Config 10000 5 3 0
 
 fastConfig :: Config
-fastConfig = Config 1000 4 3 0
+fastConfig = Config 1000 4 3 0.025
+
+fastConfigWithoutExtra :: Config
+fastConfigWithoutExtra = Config 1000 4 3 0
 
 type BoardLabel = (Board, GameMove)
 type Label = Either GameState BoardLabel
