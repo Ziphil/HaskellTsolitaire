@@ -7,6 +7,7 @@ module Data.Tsuro.Interface
 where
 
 import qualified Data.Tsuro.Interface.Game as Game
+import qualified Data.Tsuro.Interface.MeasureRate as MeasureRate
 import qualified Data.Tsuro.Interface.Simulate as Simulate
 import Data.Tsuro.Interface.Util
 import System.Console.Pretty
@@ -20,6 +21,7 @@ start = do
   case mode of
     "g" -> Game.start
     "s" -> Simulate.start
+    "m" -> MeasureRate.start
 
 inputMode :: IO String
 inputMode = do
@@ -28,6 +30,7 @@ inputMode = do
   case input of
     "g" -> return "g"
     "s" -> return "s"
+    "m" -> return "m"
     _ -> do
       flushStrLn $ colorError "@ No such mode."
       inputMode
