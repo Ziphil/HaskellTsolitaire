@@ -26,7 +26,7 @@ import Ziphil.Util.List
 import Ziphil.Util.Random
 
 
-data Config = Config {iterateSize :: Int, thresholdNum :: Int, expParam :: Double, shallownessCoeff :: Double}
+data Config = Config {iterateSize :: Int, thresholdNum :: Int, correctionCoeff :: Double, shallownessCoeff :: Double}
 
 instance MonadRandom m => Search m Config where
   runSearch config = give config search
@@ -57,7 +57,7 @@ correction :: Given Config => SearchTree -> SearchTree -> Double
 correction parent child = 
   if num child == 0
     then 1 / 0
-    else sqrt (log parentNum / childNum) * expParam given
+    else sqrt (log parentNum / childNum) * correctionCoeff given
   where
     parentNum = fromIntegral $ num parent
     childNum = fromIntegral $ num child
