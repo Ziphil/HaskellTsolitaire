@@ -127,32 +127,8 @@ montecarloLeaf node@(Node label num accum extra _) = return (nextNode, reward)
 makeChildren :: Given Config => Label -> [SearchTree]
 makeChildren = either makeChildrenS (makeChildrenB . fst)
 
-outerStonePoss :: [StonePos]
-outerStonePoss = (tops ++ rights ++ bottoms ++ lefts) \\ initialStones
-  where
-    tops = comb (map (, 0) [0 .. boardSize - 1]) [TopLeft, TopRight]
-    rights = comb (map (boardSize - 1, ) [0 .. boardSize - 1]) [RightTop, RightBottom]
-    bottoms = comb (map (, boardSize - 1) [0 .. boardSize - 1]) [BottomRight, BottomLeft]
-    lefts = comb (map (0, ) [0 .. boardSize - 1]) [LeftBottom, LeftTop]
-
--- 与えられた位置が盤面の外周にどれだけ近いかを返します。
--- 具体的には、盤面の中央にある位置であれば 0 を返し、盤面の外周に向かって移動するにつれて 1 ずつ増加する整数を返します。
-shallowness :: TilePos -> Int
-shallowness (x, y) = (boardSize - 1) #/ 2 - min x' y'
-  where
-    x' = min x (boardSize - x - 1)
-    y' = min y (boardSize - y - 1)
-
-maxShallowness :: Int
-maxShallowness = (boardSize - 1) #/ 2 + 1
-
 calcExtra :: Given Config => Board -> Double
-calcExtra (Board tiles _ _ _) = 
-  if shallownessCoeff given == 0
-    then 0
-    else fromIntegral shallownessSum * shallownessCoeff given
-  where
-    shallownessSum = sum $ map (either (const maxShallowness) (shallowness . fst) . advanceStone tiles) outerStonePoss
+calcExtra (Board tiles _ _ _) = 0
 
 makeChildrenS :: Given Config => GameState -> [SearchTree]
 makeChildrenS state@(GameState board hand) = map makeNode $ possibleMovesAndBoards' state
