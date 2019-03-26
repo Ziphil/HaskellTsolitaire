@@ -26,6 +26,7 @@ module Data.Tsuro.Core
   , Tiles (..)
   , wholeTilePoss
   , emptyTiles
+  , advanceStone
   , Board (..)
   , initialStones
   , initialBoard
