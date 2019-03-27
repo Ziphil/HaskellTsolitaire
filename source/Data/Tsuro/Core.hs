@@ -280,7 +280,12 @@ data Board = Board {tiles :: Tiles, remainingTiles :: [Tile], adjacentPoss :: [T
 
 -- 駒の初期位置を返します。
 initialStones :: [StonePos]
-initialStones = [((1, 0), TopRight), ((4, 0), TopLeft), ((5, 1), RightBottom), ((5, 4), RightTop), ((4, 5), BottomLeft), ((1, 5), BottomRight), ((0, 4), LeftTop), ((0, 1), LeftBottom)]
+initialStones = tops ++ rights ++ bottoms ++ lefts
+  where
+    tops = [((1, 0), TopRight), ((boardSize - 2, 0), TopLeft)]
+    rights = [((boardSize - 1, 1), RightBottom), ((boardSize - 1, boardSize - 2), RightTop)]
+    bottoms = [((boardSize - 2, boardSize - 1), BottomLeft), ((1, boardSize - 1), BottomRight)]
+    lefts = [((0, boardSize - 2), LeftTop), ((0, 1), LeftBottom)]
 
 -- 初期状態の盤面を返します。
 initialBoard :: Board
