@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE TupleSections #-}
 
 
@@ -28,6 +29,7 @@ module Data.Tsuro.Core
   , emptyTiles
   , advanceStone
   , Board (..)
+  , pattern BoardPat
   , initialStones
   , initialBoard
   , usedTiles
@@ -278,6 +280,9 @@ advanceStone (Tiles tiles) (tilePos, edge) =
 data Board = Board {tiles :: Tiles, remainingTiles :: [Tile], adjacentPoss :: [TilePos], stones :: [StonePos]}
   deriving (Eq, Show)
 
+pattern BoardPat :: Tiles -> [StonePos] -> Board
+pattern BoardPat tiles stones <- Board tiles _ _ stones
+
 -- 駒の初期位置を返します。
 initialStones :: [StonePos]
 initialStones = tops ++ rights ++ bottoms ++ lefts
@@ -295,7 +300,7 @@ initialBoard = Board emptyTiles wholeTiles adjacentPoss initialStones
 
 -- 指定された位置にタイルが置かれていないか確かめ、置かれていなければ True を返します。
 isEmpty :: TilePos -> Board -> Bool
-isEmpty tilePos (Board (Tiles tiles) _ _ _) = isNothing (tiles ! tilePos)
+isEmpty tilePos (BoardPat (Tiles tiles) _) = isNothing (tiles ! tilePos)
 
 isAdjacent' :: TilePos -> [StonePos] -> Bool
 isAdjacent' pos = any ((== pos) . fst)
@@ -303,11 +308,11 @@ isAdjacent' pos = any ((== pos) . fst)
 -- 指定された位置が何らかの駒と隣接しているかどうか確かめ、隣接していれば True を返します。
 -- この関数が False を返すような位置には、ルール上タイルを置くことができません。
 isAdjacent :: TilePos -> Board -> Bool
-isAdjacent pos (Board _ _ _ stones) = isAdjacent' pos stones
+isAdjacent pos (BoardPat _ stones) = isAdjacent' pos stones
 
 -- 盤面に使われているタイルのリストを返します。
 usedTiles :: Board -> [Tile]
-usedTiles (Board (Tiles tiles) _ _ _) = catMaybes $ elems tiles
+usedTiles (BoardPat (Tiles tiles) _) = catMaybes $ elems tiles
 
 type TileMove = (TilePos, Tile)
 

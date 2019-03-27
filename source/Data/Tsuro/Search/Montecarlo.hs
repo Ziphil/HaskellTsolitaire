@@ -155,7 +155,7 @@ shallowness (x, y) = (boardSize - 1) #/ 2 - min x' y'
     y' = min y (boardSize - y - 1)
 
 calcEachExtra :: Given Config => Board -> StonePos -> Int
-calcEachExtra (Board tiles _ _ _) stonePos =
+calcEachExtra (BoardPat tiles _) stonePos =
   case advanceStone tiles stonePos of
     Left _ -> (boardSize - 1) #/ 2 + 3
     Right (tilePos, _) -> shallowness tilePos

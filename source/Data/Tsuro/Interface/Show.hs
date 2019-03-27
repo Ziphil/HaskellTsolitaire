@@ -58,7 +58,7 @@ instance ShowRich [StonePos] where
   showRich stones = unwords $ map showRich stones
 
 instance ShowRich Board where
-  showRich (Board tiles _ _ stones) = showRich tiles ++ " " ++ showRich stones
+  showRich (BoardPat tiles stones) = showRich tiles ++ " " ++ showRich stones
 
 instance ShowRich TileMove where
   showRich (pos, tile) = showRich pos ++ showRich tile
