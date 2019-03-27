@@ -1,4 +1,5 @@
---
+{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE ViewPatterns #-}
 
 
 module Data.Tsuro.Interface.Game
@@ -6,6 +7,7 @@ module Data.Tsuro.Interface.Game
   )
 where
 
+import Control.Arrow ((&&&))
 import Control.Monad
 import Data.Char
 import Data.Either
@@ -48,6 +50,9 @@ loop game = do
       flushStrLn ""
       loop nextGame
 
+pattern Prefix :: String -> String -> String
+pattern Prefix mode rest <- (take 2 &&& (head . drop 2) &&& drop 3 -> (mode, (' ', rest)))
+
 inputGameMove :: Game -> IO (Either Game GameMove)
 inputGameMove game = do
   flushStr $ showInputString game
@@ -56,7 +61,7 @@ inputGameMove game = do
     ":p" -> do
       flushStrLn $ colorMessage $ "@ Possible moves: " ++ unwords (map showRich $ possibleMoves game)
       inputGameMove game
-    ':' : 's' : rest -> case parseSearch rest of
+    Prefix ":s" rest -> case parseSearch rest of
       Nothing -> do
         flushStrLn $ colorError "@ No such algorithm."
         inputGameMove game
@@ -64,7 +69,7 @@ inputGameMove game = do
         (move, ratio) <- runSearchWithRatio search $ fromRight undefined (gameStateOf game)
         flushStrLn $ colorMessage $ "@ Suggested move: " ++ showRich move ++ " (" ++ printf "%.2f" (ratio * 100) ++ "%)"
         inputGameMove game
-    ':' : 'c' : ' ' : rest -> case parseTile rest of
+    Prefix ":c" rest -> case parseTile rest of
       Nothing -> do
         flushStrLn $ colorError "@ Invalid input."
         inputGameMove game
