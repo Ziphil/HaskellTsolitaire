@@ -11,7 +11,9 @@ module Data.Tsuro.Search
   , SimulateStatus (..)
   , Record
   , SearchResult
+  , Hook
   , simulate
+  , simulateWithHook
   , measureRate
   )
 where
@@ -42,22 +44,29 @@ data SimulateStatus = Success | Failure
 type Record = [TileMove]
 type SearchResult = (Game, Record)
 
+type Hook m = Double -> m ()
+
 -- 与えられた探索アルゴリズムを用いて、クリアするか詰むかするまでゲームをプレイします。
 -- クリアしたか詰んだかの情報に加え、プレイ後のゲーム状況および棋譜を返します。
 -- なお、7 手以下で詰んだ場合は、確定詰みのタイル順を引いてしまったと見なし、もう一度プレイをやり直します。
 simulate :: (MonadRandom m, Search m s) => s -> m (SearchResult, SimulateStatus)
-simulate search = bool (simulate search) result =<< check <$> result
+simulate = simulateWithHook $ return . const ()
+
+simulateWithHook :: (MonadRandom m, Search m s) => Hook m -> s -> m (SearchResult, SimulateStatus)
+simulateWithHook hook search = bool (simulateWithHook hook search) result =<< check <$> result
   where
-    result = simulateRecursion search . (, []) =<< initialGame
+    result = simulateRecursion hook search . (, []) =<< initialGame
     check ((_, record), status) = status == Failure && length record <= 7
 
-simulateRecursion :: (Monad m, Search m s) => s -> SearchResult -> m (SearchResult, SimulateStatus)
-simulateRecursion search result@(game, record) = 
+simulateRecursion :: (Monad m, Search m s) => Hook m -> s -> SearchResult -> m (SearchResult, SimulateStatus)
+simulateRecursion hook search result@(game, record) = 
   case (isCleared game, isOver game) of
     (True, _) -> return (result, Success)
     (False, True) -> return (result, Failure)
-    (False, False) -> simulateRecursion search =<< (fst &&& makeRecord) <$> simulateOnce search game
+    (False, False) -> (hook =<< makeProgress <$> nextResult) >> (simulateRecursion hook search =<< nextResult)
   where
+    nextResult = (fst &&& makeRecord) <$> simulateOnce search game
+    makeProgress (_, record) = fromIntegral (length record) / fromIntegral tileSize
     makeRecord (_, move) = record ++ [move]
 
 simulateOnce :: (Monad m, Search m s) => s -> Game -> m (Game, TileMove)
