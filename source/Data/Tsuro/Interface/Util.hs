@@ -21,6 +21,7 @@ where
 import System.Console.Pretty
 import System.IO
 import Text.Printf
+import Ziphil.Util.List
 
 
 colorMessage :: Pretty a => a -> a
@@ -68,4 +69,9 @@ updateProgress :: Double -> IO ()
 updateProgress progress = do
   cursorUpLine 1
   clearLine
-  flushStrLn $ colorMessage $ "@ Progress: " ++ printf "%.2f" (progress * 100) ++ "%"
+  flushStrLn $ colorMessage $ "@ Progress: " ++ makeBar 30 progress ++ " " ++ printf "%5.2f" (progress * 100) ++ "%"
+
+makeBar :: Int -> Double -> String
+makeBar maxLength progress = interpose "[" "]" $ replicate barLength '#' ++ replicate (maxLength - barLength) '-'
+  where
+    barLength = truncate $ progress * fromIntegral maxLength
