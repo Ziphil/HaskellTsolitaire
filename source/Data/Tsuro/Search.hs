@@ -44,8 +44,12 @@ type SearchResult = (Game, Record)
 
 -- 与えられた探索アルゴリズムを用いて、クリアするか詰むかするまでゲームをプレイします。
 -- クリアしたか詰んだかの情報に加え、プレイ後のゲーム状況および棋譜を返します。
+-- なお、7 手以下で詰んだ場合は、確定詰みのタイル順を引いてしまったと見なし、もう一度プレイをやり直します。
 simulate :: (MonadRandom m, Search m s) => s -> m (SearchResult, SimulateStatus)
-simulate search = simulateRecursion search . (, []) =<< initialGame
+simulate search = bool (simulate search) result =<< check <$> result
+  where
+    result = simulateRecursion search . (, []) =<< initialGame
+    check ((_, record), status) = status == Failure && length record <= 7
 
 simulateRecursion :: (Monad m, Search m s) => s -> SearchResult -> m (SearchResult, SimulateStatus)
 simulateRecursion search result@(game, record) = 
