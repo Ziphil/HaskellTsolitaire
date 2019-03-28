@@ -10,7 +10,6 @@ import qualified Data.Tsuro.Interface.Game as Game
 import qualified Data.Tsuro.Interface.MeasureRate as MeasureRate
 import qualified Data.Tsuro.Interface.Simulate as Simulate
 import Data.Tsuro.Interface.Util
-import System.Console.Pretty
 import System.IO
 
 

@@ -18,7 +18,6 @@ import Data.Tsuro.Interface.Read
 import Data.Tsuro.Interface.Show
 import Data.Tsuro.Interface.Util
 import Data.Tsuro.Search
-import System.Console.Pretty
 import System.IO
 import System.Random
 import Text.Printf

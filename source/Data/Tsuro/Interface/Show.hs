@@ -11,7 +11,6 @@ import Data.Array.IArray
 import Data.List
 import Data.Tsuro.Core
 import Data.Tsuro.Interface.Util
-import System.Console.Pretty
 import Ziphil.Util.List
 
 
