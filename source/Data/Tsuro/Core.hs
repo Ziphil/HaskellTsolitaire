@@ -220,15 +220,14 @@ adjacent direction (x, y) =
 newtype Tiles = Tiles {rawTiles :: Array TilePos (Maybe Tile)}
   deriving (Eq, Show)
 
-tilePosBounds :: (TilePos, TilePos)
-tilePosBounds = ((0, 0), (boardSize - 1, boardSize - 1))
-
 wholeTilePoss :: [TilePos]
-wholeTilePoss = range tilePosBounds
+wholeTilePoss = range ((0, 0), (boardSize - 1, boardSize - 1))
 
 -- 空の盤面を返します。
 emptyTiles :: Tiles
-emptyTiles = Tiles $ array tilePosBounds $ map (, Nothing) wholeTilePoss
+emptyTiles = Tiles $ array bounds $ map (, Nothing) wholeTilePoss
+  where
+    bounds = ((0, 0), (boardSize - 1, boardSize - 1))
 
 -- 見た目上で同じ場所を表すもう一方の駒位置を返します。
 -- 例えば、横に隣り合う 2 つのマスの間の上側は、左側のマスから見て RightTop の位置ですが、右側のマスから見て LeftTop の位置でもあります。
