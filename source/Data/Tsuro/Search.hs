@@ -44,6 +44,11 @@ data SimulateStatus = Success | Failure
 type Record = [TileMove]
 type SearchResult = (Game, Record)
 
+-- 与えられたシミュレーションの結果から、確定詰みのタイル順を引いてしまった可能性があるかどうか判定します。
+-- 現状では 7 手以下で詰んでいた場合に True を返します。
+isDefiniteOver :: (SearchResult, SimulateStatus) -> Bool
+isDefiniteOver ((_, record), status) = status == Failure && length record <= 7
+
 type Hook m = Double -> m ()
 
 -- 与えられた探索アルゴリズムを用いて、クリアするか詰むかするまでゲームをプレイします。
@@ -53,20 +58,19 @@ simulate :: (MonadRandom m, Search m s) => s -> m (SearchResult, SimulateStatus)
 simulate = simulateWithHook $ return . const ()
 
 simulateWithHook :: (MonadRandom m, Search m s) => Hook m -> s -> m (SearchResult, SimulateStatus)
-simulateWithHook hook search = bool (simulateWithHook hook search) result =<< check <$> result
+simulateWithHook hook search = make =<< simulateRecursion hook search . (, []) =<< initialGame
   where
-    result = simulateRecursion hook search . (, []) =<< initialGame
-    check ((_, record), status) = status == Failure && length record <= 7
+    make result = bool (simulateWithHook hook search) (return result) $ isDefiniteOver result 
 
 simulateRecursion :: (Monad m, Search m s) => Hook m -> s -> SearchResult -> m (SearchResult, SimulateStatus)
 simulateRecursion hook search result@(game, record) = 
   case (isCleared game, isOver game) of
     (True, _) -> return (result, Success)
     (False, True) -> return (result, Failure)
-    (False, False) -> (hook =<< makeProgress <$> nextResult) >> (simulateRecursion hook search =<< nextResult)
+    (False, False) -> make =<< (fst &&& makeRecord) <$> simulateOnce search game
   where
-    nextResult = (fst &&& makeRecord) <$> simulateOnce search game
-    makeProgress (_, record) = fromIntegral (length record) / fromIntegral tileSize
+    make result = (hook $ calcProgress result) >> (simulateRecursion hook search result)
+    calcProgress (_, record) = fromIntegral (length record) / fromIntegral tileSize
     makeRecord (_, move) = record ++ [move]
 
 simulateOnce :: (Monad m, Search m s) => s -> Game -> m (Game, TileMove)
