@@ -18,7 +18,9 @@ start :: IO ()
 start = do
   SomeSearch search <- inputSearch
   size <- inputSize
-  rate <- measureRate size search
+  flushStrLn ""
+  prepareProgress
+  rate <- measureRateWithHook updateProgress size search
   flushStrLn ""
   flushStrLn $ colorMessage $ "@ Success Rate: " ++ printf "%.2f" (rate * 100) ++ "%"
 

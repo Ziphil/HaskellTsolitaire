@@ -16,6 +16,7 @@ module Data.Tsuro.Search
   , simulate
   , simulateWithHook
   , measureRate
+  , measureRateWithHook
   )
 where
 
@@ -84,7 +85,11 @@ simulateOnce search game = (makeGame &&& makeTileMove) <$> runSearch search stat
 
 -- 与えられた探索アルゴリズムを用いて複数回ゲームをプレイし、成功率を計算します。
 measureRate :: (MonadRandom m, Search m s) => Int -> s -> m Double
-measureRate size search = calcRate . length . filter ((== Success) . snd) <$> results
+measureRate = measureRateWithHook $ return . const ()
+
+measureRateWithHook :: (MonadRandom m, Search m s) => Hook m -> Int -> s -> m Double
+measureRateWithHook hook size search = calcRate . length . filter ((== Success) . snd) <$> results
   where
-    results = replicateM size $ simulate search
+    results = forM [0 .. size - 1] simulate'
+    simulate' i = simulateWithHook (hook . (/ fromIntegral size) . (+ fromIntegral i)) search
     calcRate successSize = fromIntegral successSize / fromIntegral size
