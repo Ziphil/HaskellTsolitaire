@@ -8,9 +8,10 @@ module Data.Tsuro.Search
   ( Search (..)
   , SomeSearch (..)
   , parseSearch
-  , SimulateStatus (..)
+  , SimulationStatus (..)
   , Record
-  , SearchResult
+  , GameHistory
+  , SimulationResult
   , Hook
   , simulate
   , simulateWithHook
@@ -38,38 +39,39 @@ parseSearch string =
     "mfn" -> Just $ SomeSearch Montecarlo.fastConfigWithoutExtra
     _ -> Nothing
 
-data SimulateStatus = Success | Failure
+data SimulationStatus = Success | Failure
   deriving (Eq, Show)
 
 type Record = [TileMove]
-type SearchResult = (Game, Record)
+type GameHistory = (Game, Record)
+type SimulationResult = (GameHistory, SimulationStatus)
 
 -- 与えられたシミュレーションの結果から、確定詰みのタイル順を引いてしまった可能性があるかどうか判定します。
 -- 現状では 7 手以下で詰んでいた場合に True を返します。
-isDefiniteOver :: (SearchResult, SimulateStatus) -> Bool
+isDefiniteOver :: SimulationResult -> Bool
 isDefiniteOver ((_, record), status) = status == Failure && length record <= 7
 
 type Hook m = Double -> m ()
 
 -- 与えられた探索アルゴリズムを用いて、クリアするか詰むかするまでゲームをプレイします。
 -- クリアしたか詰んだかの情報に加え、プレイ後のゲーム状況および棋譜を返します。
--- なお、7 手以下で詰んだ場合は、確定詰みのタイル順を引いてしまったと見なし、もう一度プレイをやり直します。
-simulate :: (MonadRandom m, Search m s) => s -> m (SearchResult, SimulateStatus)
+-- なお、確定詰みのタイル順を引いてしまったと見なされた場合は、もう一度プレイをやり直します。
+simulate :: (MonadRandom m, Search m s) => s -> m SimulationResult
 simulate = simulateWithHook $ return . const ()
 
-simulateWithHook :: (MonadRandom m, Search m s) => Hook m -> s -> m (SearchResult, SimulateStatus)
+simulateWithHook :: (MonadRandom m, Search m s) => Hook m -> s -> m SimulationResult
 simulateWithHook hook search = make =<< simulateRecursion hook search . (, []) =<< initialGame
   where
     make result = bool (simulateWithHook hook search) (return result) $ isDefiniteOver result 
 
-simulateRecursion :: (Monad m, Search m s) => Hook m -> s -> SearchResult -> m (SearchResult, SimulateStatus)
-simulateRecursion hook search result@(game, record) = 
+simulateRecursion :: (Monad m, Search m s) => Hook m -> s -> GameHistory -> m SimulationResult
+simulateRecursion hook search history@(game, record) = 
   case (isCleared game, isOver game) of
-    (True, _) -> return (result, Success)
-    (False, True) -> return (result, Failure)
-    (False, False) -> make =<< (fst &&& makeRecord) <$> simulateOnce search game
+    (True, _) -> return (history, Success)
+    (False, True) -> return (history, Failure)
+    (False, False) -> makeResult =<< (fst &&& makeRecord) <$> simulateOnce search game
   where
-    make result = (hook $ calcProgress result) >> (simulateRecursion hook search result)
+    makeResult history = (hook $ calcProgress history) >> (simulateRecursion hook search history)
     calcProgress (_, record) = fromIntegral (length record) / fromIntegral tileSize
     makeRecord (_, move) = record ++ [move]
 
