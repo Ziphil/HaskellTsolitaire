@@ -10,11 +10,17 @@ module Data.Tsuro.Interface.Util
   , colorTurn
   , flushStrLn
   , flushStr
+  , cursorUpLine
+  , cursorDownLine
+  , clearLine
+  , prepareProgress
+  , updateProgress
   )
 where
 
 import System.Console.Pretty
 import System.IO
+import Text.Printf
 
 
 colorMessage :: Pretty a => a -> a
@@ -40,3 +46,26 @@ flushStrLn string = putStrLn string >> hFlush stdout
 
 flushStr :: String -> IO ()
 flushStr string = putStr string >> hFlush stdout
+
+cursorUpLine :: Int -> IO ()
+cursorUpLine size = flushStr $ "\x1b[" ++ show size ++ "F"
+
+cursorDownLine :: Int -> IO ()
+cursorDownLine size = flushStr $ "\x1b[" ++ show size ++ "E"
+
+clearLine :: IO ()
+clearLine = flushStr $ "\x1b[2K"
+
+-- プログレスバーを表示する準備をします。
+-- プログレスバーの更新を始める前に必ずこの関数を呼んでください。
+prepareProgress :: IO ()
+prepareProgress = do
+  flushStrLn ""
+  updateProgress 0
+
+-- プログレスバーの更新をします。
+updateProgress :: Double -> IO ()
+updateProgress progress = do
+  cursorUpLine 1
+  clearLine
+  flushStrLn $ colorMessage $ "@ Progress: " ++ printf "%.2f" (progress * 100) ++ "%"

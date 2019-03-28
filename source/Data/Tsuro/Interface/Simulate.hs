@@ -10,12 +10,15 @@ import Data.Tsuro.Core
 import Data.Tsuro.Interface.Show
 import Data.Tsuro.Interface.Util
 import Data.Tsuro.Search
+import Ziphil.Util.Core
 
 
 start :: IO ()
 start = do
   SomeSearch search <- inputSearch
-  ((game, record), status) <- simulate search
+  flushStrLn ""
+  prepareProgress
+  ((game, record), status) <- simulateWithHook updateProgress search
   flushStrLn ""
   flushStrLn $ showRich game
   case status of
