@@ -21,14 +21,5 @@ infixr 9 .^^
 (.^^) :: (d -> e) -> (a -> b -> c -> d) -> (a -> b -> c -> e)
 (.^^) = (.) . (.) . (.)
 
-ifThenElse :: Bool -> a -> a -> a
-ifThenElse pred true false =
-  case pred of
-    True -> true
-    False -> false
-
-bool :: a -> a -> Bool -> a
-bool true false pred = ifThenElse pred true false
-
 allEnums :: Enum a => [a]
 allEnums = enumFrom (toEnum 0)

@@ -22,11 +22,11 @@ where
 
 import Control.Arrow
 import Control.Monad.Random
+import Data.Bool
 import Data.Either
 import Data.Tsuro.Core
 import Data.Tsuro.Search.Class
 import qualified Data.Tsuro.Search.Montecarlo as Montecarlo
-import Ziphil.Util.Core
 
 
 data SomeSearch = forall s. Search IO s => SomeSearch s
