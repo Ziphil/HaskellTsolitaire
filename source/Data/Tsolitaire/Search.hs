@@ -4,7 +4,7 @@
 {-# LANGUAGE TupleSections #-}
 
 
-module Data.Tsuro.Search
+module Data.Tsolitaire.Search
   ( Search (..)
   , SomeSearch (..)
   , parseSearch
@@ -24,9 +24,9 @@ import Control.Arrow
 import Control.Monad.Random
 import Data.Bool
 import Data.Either
-import Data.Tsuro.Core
-import Data.Tsuro.Search.Class
-import qualified Data.Tsuro.Search.Montecarlo as Montecarlo
+import Data.Tsolitaire.Core
+import Data.Tsolitaire.Search.Class
+import qualified Data.Tsolitaire.Search.Montecarlo as Montecarlo
 
 
 data SomeSearch = forall s. Search IO s => SomeSearch s

@@ -3,7 +3,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 
 
-module Data.Tsuro.Search.Minimax
+module Data.Tsolitaire.Search.Minimax
   ( Config (..)
   , defaultConfig
   )
@@ -14,8 +14,8 @@ import Data.Either
 import Data.List
 import Data.Ord
 import Data.Reflection
-import Data.Tsuro.Core
-import Data.Tsuro.Search.Class
+import Data.Tsolitaire.Core
+import Data.Tsolitaire.Search.Class
 
 
 data Config = Config {maxDepth :: Int}

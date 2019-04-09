@@ -4,9 +4,9 @@
 module Main where
 
 import Data.Either
-import Data.Tsuro
-import qualified Data.Tsuro.Interface as Interface
-import qualified Data.Tsuro.Search.Montecarlo as Montecarlo
+import Data.Tsolitaire
+import qualified Data.Tsolitaire.Interface as Interface
+import qualified Data.Tsolitaire.Search.Montecarlo as Montecarlo
 
 
 main :: IO ()

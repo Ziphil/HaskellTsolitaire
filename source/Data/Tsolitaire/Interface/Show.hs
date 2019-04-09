@@ -2,15 +2,15 @@
 {-# LANGUAGE FlexibleInstances #-}
 
 
-module Data.Tsuro.Interface.Show
+module Data.Tsolitaire.Interface.Show
   ( ShowRich (..)
   )
 where
 
 import Data.Array.IArray
 import Data.List
-import Data.Tsuro.Core
-import Data.Tsuro.Interface.Util
+import Data.Tsolitaire.Core
+import Data.Tsolitaire.Interface.Util
 import Ziphil.Util.List
 
 

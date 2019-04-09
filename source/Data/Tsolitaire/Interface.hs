@@ -1,15 +1,15 @@
 --
 
 
-module Data.Tsuro.Interface
+module Data.Tsolitaire.Interface
   ( start
   )
 where
 
-import qualified Data.Tsuro.Interface.Game as Game
-import qualified Data.Tsuro.Interface.MeasureRate as MeasureRate
-import qualified Data.Tsuro.Interface.Simulate as Simulate
-import Data.Tsuro.Interface.Util
+import qualified Data.Tsolitaire.Interface.Game as Game
+import qualified Data.Tsolitaire.Interface.MeasureRate as MeasureRate
+import qualified Data.Tsolitaire.Interface.Simulate as Simulate
+import Data.Tsolitaire.Interface.Util
 import System.IO
 
 

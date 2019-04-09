@@ -2,7 +2,7 @@
 {-# LANGUAGE ViewPatterns #-}
 
 
-module Data.Tsuro.Interface.Game
+module Data.Tsolitaire.Interface.Game
   ( start
   )
 where
@@ -13,11 +13,11 @@ import Data.Char
 import Data.Either
 import Data.Ix
 import Data.List
-import Data.Tsuro.Core
-import Data.Tsuro.Interface.Read
-import Data.Tsuro.Interface.Show
-import Data.Tsuro.Interface.Util
-import Data.Tsuro.Search
+import Data.Tsolitaire.Core
+import Data.Tsolitaire.Interface.Read
+import Data.Tsolitaire.Interface.Show
+import Data.Tsolitaire.Interface.Util
+import Data.Tsolitaire.Search
 import System.IO
 import System.Random
 import Text.Printf

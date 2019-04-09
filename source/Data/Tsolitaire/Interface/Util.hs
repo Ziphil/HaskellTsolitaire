@@ -1,7 +1,7 @@
 --
 
 
-module Data.Tsuro.Interface.Util 
+module Data.Tsolitaire.Interface.Util 
   ( colorMessage
   , colorError
   , colorInput

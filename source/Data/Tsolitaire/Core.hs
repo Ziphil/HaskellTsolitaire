@@ -5,7 +5,7 @@
 {-# LANGUAGE TupleSections #-}
 
 
-module Data.Tsuro.Core
+module Data.Tsolitaire.Core
   ( Rotation (..)
   , Edge (..)
   , Aisles (..)

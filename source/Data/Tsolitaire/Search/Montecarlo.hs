@@ -4,7 +4,7 @@
 {-# LANGUAGE TupleSections #-}
 
 
-module Data.Tsuro.Search.Montecarlo
+module Data.Tsolitaire.Search.Montecarlo
   ( Config (..)
   , defaultConfig
   , defaultConfigWithoutExtra
@@ -20,8 +20,8 @@ import Data.Either
 import Data.List
 import Data.Ord
 import Data.Reflection
-import Data.Tsuro.Core
-import Data.Tsuro.Search.Class
+import Data.Tsolitaire.Core
+import Data.Tsolitaire.Search.Class
 import System.Random
 import Ziphil.Util.Core
 import Ziphil.Util.List

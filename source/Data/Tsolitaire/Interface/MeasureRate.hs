@@ -1,15 +1,15 @@
 --
 
 
-module Data.Tsuro.Interface.MeasureRate
+module Data.Tsolitaire.Interface.MeasureRate
   ( start
   )
 where
 
-import Data.Tsuro.Core
-import Data.Tsuro.Interface.Show
-import Data.Tsuro.Interface.Util
-import Data.Tsuro.Search
+import Data.Tsolitaire.Core
+import Data.Tsolitaire.Interface.Show
+import Data.Tsolitaire.Interface.Util
+import Data.Tsolitaire.Search
 import Text.Printf
 import Text.Read
 

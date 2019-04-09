@@ -1,12 +1,12 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 
 
-module Data.Tsuro.Search.Class
+module Data.Tsolitaire.Search.Class
   ( Search (..)
   )
 where
 
-import Data.Tsuro.Core
+import Data.Tsolitaire.Core
 
 
 class Search m s where
