@@ -2,6 +2,6 @@
 .vscode
 *~
 *.prof
-tsuro.cabal
+tsolitaire.cabal
 desktop.ini
 Thumbs.db

@@ -1,12 +1,12 @@
-name: "tsuro"
+name: "tsolitaire"
 version: "1.0.0"
-github: "githubuser/Tsuro"
+github: "githubuser/Tsolitaire"
 license: BSD3
 author: "Ziphil"
 maintainer: "example@example.com"
 copyright: "2019 Ziphil"
 
-description: "Please see the README on GitHub at <https://github.com/githubuser/Tsuro#readme>"
+description: "Please see the README on GitHub at <https://github.com/githubuser/Tsolitaire#readme>"
 
 dependencies:
   - base >= 4.7 && < 5
@@ -23,7 +23,7 @@ library:
   source-dirs: source
 
 executables:
-  tsuro-exe:
+  tsolitaire-exe:
     main: Main.hs
     source-dirs: application
     ghc-options:
@@ -31,10 +31,10 @@ executables:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
-      - tsuro
+      - tsolitaire
 
 tests:
-  tsuro-test:
+  tsolitaire-test:
     main: Spec.hs
     source-dirs: test
     ghc-options:
@@ -42,4 +42,4 @@ tests:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
-      - tsuro
+      - tsolitaire
