@@ -6,7 +6,7 @@ module Main where
 import Control.Exception
 import Control.Monad
 import Data.List
-import Data.Tsuro
+import Data.Tsolitaire
 import Test.Hspec
 import Ziphil.Util.Test
 

@@ -11,9 +11,9 @@ infix 1 ?==
 (?==) :: (HasCallStack, Show a, Eq a) => a -> a -> Expectation
 (?==) = shouldBe
 
-infix 1 ?!=
-(?!=) :: (HasCallStack, Show a, Eq a) => a -> a -> Expectation
-(?!=) = shouldNotBe
+infix 1 ?/=
+(?/=) :: (HasCallStack, Show a, Eq a) => a -> a -> Expectation
+(?/=) = shouldNotBe
 
 infix 1 ?>>
 (?>>) :: (HasCallStack, Show a) => a -> (a -> Bool) -> Expectation
