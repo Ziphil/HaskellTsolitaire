@@ -10,7 +10,7 @@ import Data.Tsolitaire.Core
 import Data.Tsolitaire.Interface.Show
 import Data.Tsolitaire.Interface.Util
 import Data.Tsolitaire.Search
-import Ziphil.Util.Core
+import Data.ZiphilUtil.Core
 
 
 start :: IO ()

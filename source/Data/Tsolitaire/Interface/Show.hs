@@ -11,7 +11,7 @@ import Data.Array.IArray
 import Data.List
 import Data.Tsolitaire.Core
 import Data.Tsolitaire.Interface.Util
-import Ziphil.Util.List
+import Data.ZiphilUtil.List
 
 
 class ShowRich a where

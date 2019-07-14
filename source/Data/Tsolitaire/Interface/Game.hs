@@ -18,11 +18,11 @@ import Data.Tsolitaire.Interface.Read
 import Data.Tsolitaire.Interface.Show
 import Data.Tsolitaire.Interface.Util
 import Data.Tsolitaire.Search
+import Data.ZiphilUtil.List
 import System.IO
 import System.Random
 import Text.Printf
 import Text.Read
-import Ziphil.Util.List
 
 
 start :: IO ()

@@ -68,12 +68,12 @@ import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as Set
 import Data.Tuple
+import Data.ZiphilUtil.Core
+import Data.ZiphilUtil.List
+import Data.ZiphilUtil.Monad
+import Data.ZiphilUtil.Random
 import GHC.Generics
 import System.Random
-import Ziphil.Util.Core
-import Ziphil.Util.List
-import Ziphil.Util.Monad
-import Ziphil.Util.Random
 
 
 data Rotation = None | Clock | Inverse | Anticlock

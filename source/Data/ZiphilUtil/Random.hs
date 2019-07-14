@@ -1,7 +1,7 @@
 --
 
 
-module Ziphil.Util.Random where
+module Data.ZiphilUtil.Random where
 
 import Control.Monad.Random
 import Data.List

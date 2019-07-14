@@ -1,7 +1,7 @@
 --
 
 
-module Ziphil.Util.Core where
+module Data.ZiphilUtil.Core where
 
 
 infixl 7 #/

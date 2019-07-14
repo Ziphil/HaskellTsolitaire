@@ -7,8 +7,8 @@ import Control.Exception
 import Control.Monad
 import Data.List
 import Data.Tsolitaire
+import Data.ZiphilUtil.Test
 import Test.Hspec
-import Ziphil.Util.Test
 
 
 infixl 6 <@

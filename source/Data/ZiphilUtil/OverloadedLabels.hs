@@ -7,7 +7,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 
-module Ziphil.Util.OverloadedLabels where
+module Data.ZiphilUtil.OverloadedLabels where
 
 import Data.Proxy
 import GHC.OverloadedLabels

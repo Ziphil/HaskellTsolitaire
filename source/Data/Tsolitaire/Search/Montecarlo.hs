@@ -22,10 +22,10 @@ import Data.Ord
 import Data.Reflection
 import Data.Tsolitaire.Core
 import Data.Tsolitaire.Search.Class
+import Data.ZiphilUtil.Core
+import Data.ZiphilUtil.List
+import Data.ZiphilUtil.Random
 import System.Random
-import Ziphil.Util.Core
-import Ziphil.Util.List
-import Ziphil.Util.Random
 
 
 data Config = Config {iterateSize :: Int, thresholdNum :: Int, correctionCoeff :: Double, shallownessCoeff :: Double}

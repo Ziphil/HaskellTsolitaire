@@ -1,7 +1,7 @@
 --
 
 
-module Ziphil.Util.List where
+module Data.ZiphilUtil.List where
 
 import Control.Applicative
 import Data.Function

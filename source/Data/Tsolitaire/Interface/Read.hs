@@ -11,9 +11,9 @@ import Data.Char
 import Data.Ix
 import Data.List
 import Data.Tsolitaire.Core
-import Ziphil.Util.Core
-import Ziphil.Util.List
-import Ziphil.Util.Monad
+import Data.ZiphilUtil.Core
+import Data.ZiphilUtil.List
+import Data.ZiphilUtil.Monad
 
 
 class ReadRich a where

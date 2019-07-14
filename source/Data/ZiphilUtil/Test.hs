@@ -1,7 +1,7 @@
 --
 
 
-module Ziphil.Util.Test where
+module Data.ZiphilUtil.Test where
 
 import Control.Exception.Base
 import Test.Hspec

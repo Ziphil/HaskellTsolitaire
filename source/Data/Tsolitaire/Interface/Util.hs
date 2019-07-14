@@ -21,7 +21,7 @@ where
 import System.Console.Pretty
 import System.IO
 import Text.Printf
-import Ziphil.Util.List
+import Data.ZiphilUtil.List
 
 
 colorMessage :: Pretty a => a -> a
