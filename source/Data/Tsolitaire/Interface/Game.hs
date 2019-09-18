@@ -1,7 +1,6 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE ViewPatterns #-}
 
-
 module Data.Tsolitaire.Interface.Game
   ( start
   )

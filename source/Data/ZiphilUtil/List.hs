@@ -1,6 +1,5 @@
 --
 
-
 module Data.ZiphilUtil.List where
 
 import Control.Applicative

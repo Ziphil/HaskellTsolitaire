@@ -1,6 +1,5 @@
 {-# LANGUAGE FlexibleInstances #-}
 
-
 module Data.Tsolitaire.Interface.Read
   ( ReadRich (..)
   )

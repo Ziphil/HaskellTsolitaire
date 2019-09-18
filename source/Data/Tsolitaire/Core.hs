@@ -4,7 +4,6 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE TupleSections #-}
 
-
 module Data.Tsolitaire.Core
   ( Rotation (..)
   , Edge (..)

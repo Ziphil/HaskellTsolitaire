@@ -1,6 +1,5 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-
 module Data.Tsolitaire.Search.Class
   ( Search (..)
   )

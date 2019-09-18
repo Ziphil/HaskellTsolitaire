@@ -3,7 +3,6 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TupleSections #-}
 
-
 module Data.Tsolitaire.Search.Montecarlo
   ( Config (..)
   , defaultConfig

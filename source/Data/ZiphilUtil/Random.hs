@@ -1,6 +1,5 @@
 --
 
-
 module Data.ZiphilUtil.Random where
 
 import Control.Monad.Random

@@ -1,6 +1,5 @@
 --
 
-
 module Data.Tsolitaire.Interface.MeasureRate
   ( start
   )

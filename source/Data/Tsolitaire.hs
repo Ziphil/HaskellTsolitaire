@@ -1,6 +1,5 @@
 --
 
-
 module Data.Tsolitaire
   ( module Data.Tsolitaire.Core
   , module Data.Tsolitaire.Search

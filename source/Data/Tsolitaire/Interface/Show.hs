@@ -1,7 +1,6 @@
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE FlexibleInstances #-}
 
-
 module Data.Tsolitaire.Interface.Show
   ( ShowRich (..)
   )

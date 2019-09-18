@@ -6,7 +6,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-
 module Data.ZiphilUtil.OverloadedLabels where
 
 import Data.Proxy

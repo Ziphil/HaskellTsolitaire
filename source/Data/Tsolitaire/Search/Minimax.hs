@@ -2,7 +2,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-
 module Data.Tsolitaire.Search.Minimax
   ( Config (..)
   , defaultConfig
